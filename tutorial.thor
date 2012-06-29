@@ -339,6 +339,11 @@ class HydraTutorialApp < Thor::Group
 
     end
 
+    def fixup_ui
+      remove_file 'app/assets/stylesheets/datasets.css.scss'
+      remove_file 'app/assets/stylesheets/scaffolds.css.scss'
+    end
+
     def fixup_datasets
       return if $quick
       say %Q{
@@ -377,7 +382,19 @@ class HydraTutorialApp < Thor::Group
   class MakeItNice < Thor::Group
     include Thor::Actions
 
+    def self.source_paths
+      [File.join($base_templates_path, "make_it_nice")]
+    end
+
     # now we want our app to do stuff.. so lets enhance our old models
+
+    def some_better_views
+
+    end
+
+    def file_uploads
+
+    end
 
 
     def sprinkle_some_css
