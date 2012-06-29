@@ -3,6 +3,8 @@
 require 'rubygems'
 require 'thor'
 require 'thor/group'
+require 'rails/generators/actions'
+require 'active_support/core_ext/array/extract_options'
 
 $base_templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
 
@@ -192,15 +194,6 @@ class HydraTutorialApp < Thor::Group
 
     end
 
-    def lets_make_a_better_terminology
-      say %Q{
-    In the last step, we made up a basic XML schema for our data. In the real world, we're probably
-    dealing with more complex data in well-known standards like MODS.
-
-    Now we'll replace our custom schema with a basic MODS schema.
-      }, Thor::Shell::Color::YELLOW
-      #copy_file "dataset_better_om.rb", "app/models/dataset.rb"
-    end
 
     def stop_using_the_filesystem
       say %Q{
@@ -281,6 +274,11 @@ class HydraTutorialApp < Thor::Group
 
   class Application < Thor::Group
     include Thor::Actions
+    include Rails::Generators::Actions
+
+    def self.source_paths
+      [File.join($base_templates_path, "application")]
+    end
 
     # here are some gems that help
     def add_blacklight_and_hydra
@@ -292,7 +290,7 @@ class HydraTutorialApp < Thor::Group
     We use blacklight to provide a search interface.
       }, Thor::Shell::Color::YELLOW
 
-      run %q{echo 'gem "blacklight"' >> Gemfile}
+      gem 'blacklight'
       run 'bundle install'
       run 'rails generate blacklight --devise'
 
@@ -301,7 +299,7 @@ class HydraTutorialApp < Thor::Group
     gated discovery and permissions (through hydra-access-controls).
       }, Thor::Shell::Color::YELLOW
 
-      run %Q{echo '\ngem "hydra-head"' >> Gemfile}
+      gem 'hydra-head', "~> 4.1"
       run 'bundle install'
       run 'rails generate hydra:head User'
     end
@@ -329,7 +327,7 @@ class HydraTutorialApp < Thor::Group
 
         run 'rake hydra:jetty:config'
 
-        run %q{echo 'gem "jettywrapper"' >> Gemfile}
+        gem 'jettywrapper'
         run 'bundle install'
         run 'rake jetty:start'
       else
@@ -342,6 +340,7 @@ class HydraTutorialApp < Thor::Group
     end
 
     def fixup_datasets
+      return if $quick
       say %Q{
     We need to make a couple of tweaks to our Dataset model and controller in order
     to make it a Hydra-compliant object.
@@ -353,13 +352,24 @@ class HydraTutorialApp < Thor::Group
 
       copy_file "dataset_hydra_om.rb", "app/models/dataset.rb"
 
-      insert_into_class "app/controllers/datasets_controller.rb", DatasetsController do
-        "  include Hydra::AssetsControllerHelper"
+      inject_into_class "app/controllers/datasets_controller.rb", 'DatasetsController' do
+        "  include Hydra::AssetsControllerHelper\n"
       end
 
       insert_into_file "app/controllers/datasets_controller.rb", :after => "@dataset = Dataset.new(params[:dataset])\n" do
-        "apply_depositor_metadata(@dataset)"
+        "    apply_depositor_metadata(@dataset)\n"
       end
+    end
+
+    def lets_make_a_better_terminology
+      say %Q{
+    So far, we've been working with a made-up XML schema, however, in the real world, we're probably
+    dealing with more complex data in well-known standards like MODS.
+
+    Now we'll replace our custom schema with a basic MODS schema.
+      }, Thor::Shell::Color::YELLOW
+      copy_file "mods_desc_metadata.rb", "app/models/mods_desc_metadata.rb"
+      copy_file "dataset_hydra_mods_om.rb", "app/models/dataset.rb"
     end
 
   end
