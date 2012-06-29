@@ -15,24 +15,24 @@ class HydraTutorialApp < Thor::Group
     Welcome to this Hydra tutorial. We're going to go through some steps to
     set up a working Hydra head. We'll build the application gradually, and give you
     opportunities to stop and look around on the way.
-    }
+    }, Thor::Shell::Color::YELLOW
 
     if $quick
       say %Q{
     We'll quickly build the application, give you some Hydra models, and send you on your way.
-      }
+      }, Thor::Shell::Color::YELLOW
 
     else
       say %Q{
     We'll go through this tour slowly, starting by creating a pure Rails application, 
     and then introduce Hydra components. If you want to speed things along, 
-      }
+      }, Thor::Shell::Color::YELLOW
 
      exit unless yes? %Q{
     If you want to speed things along, you should quit this tutorial (by saying 'no'), 
     and run it again with ./tutorial.thor --quick=yes. 
 
-    Do you want to continue at this pace? (y/n) }
+    Do you want to continue at this pace? (y/n) }, Thor::Shell::Color::GREEN
     end
   end
 
@@ -46,19 +46,20 @@ class HydraTutorialApp < Thor::Group
       return if $quick
       say %Q{ 
     Obviously, if you can run this tutorial, you have already installed ruby.
-      }
+      }, Thor::Shell::Color::YELLOW
+
 
       ruby_executable = run 'which ruby', :capture => true
 
       say %Q{
     You are running this using:
     #{ruby_executable}
-      }
+      }, Thor::Shell::Color::YELLOW
 
       if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_Executable =~ /Users/
         say %Q{
     It looks like you're using rvm/rbenv/etc. (with a gemset?) We'll use this environment to build the application.
-      }
+      }, Thor::Shell::Color::YELLOW
 
       else
 
@@ -68,13 +69,13 @@ class HydraTutorialApp < Thor::Group
 
     [1] http://rvm.io/
     [2] https://github.com/sstephenson/rbenv/
-      }
+      }, Thor::Shell::Color::RED
 
       exit unless yes? %Q{
     You can continue and hope for the best, or go install one of these ruby managers, which may make your life easier.
 
     Do you want to continue anyway? (y/n)
-      }
+      }, Thor::Shell::Color::GREEN
       end
 
     end
@@ -82,14 +83,14 @@ class HydraTutorialApp < Thor::Group
     def install_bundler_and_rails
       say %Q{
     We're going to install some prerequisite gems in order to create our skeleton Rails application.
-      }
+      }, Thor::Shell::Color::YELLOW
       run 'gem install bundler rails'
     end
 
     def new_rails_app
       say %Q{
     Now we'll create the application.
-      }
+      }, Thor::Shell::Color::YELLOW
       run 'rails new hydra_tutorial_app'
       run 'cd hydra_tutorial_app'
 
@@ -97,22 +98,25 @@ class HydraTutorialApp < Thor::Group
 
     def out_of_the_box
       return if $quick
-      ask %Q{ 
+      say %Q{ 
     Here's a chance to look around. You can see the structure of a Rails application.
        ./app
        ./config
        ./lib
        Gemfile
+      }
+
+      ask %Q{
 
     Hit ENTER when you're ready to continue.
-      }
+      }, Thor::Shell::Color::GREEN
     end
 
     # and then clean up some cruft
     def remove_public_index
       say %Q{
     We'll now remove the Rails directions from the application.
-      }
+      }, Thor::Shell::Color::YELLOW
       inside 'hydra_tutorial_app' do
         run 'rm public/index.html'
       end
@@ -129,7 +133,7 @@ class HydraTutorialApp < Thor::Group
     def notes
       say %Q{
     We're going to build an application to track (simplified) datasets and their metadata.
-      }
+      }, Thor::Shell::Color::YELLOW
     end
 
     def as_if_this_was_just_a_rails_applications
@@ -137,18 +141,18 @@ class HydraTutorialApp < Thor::Group
     If we wanted to build a Rails application to do this, we would add some models and controllers.
 
     Rails can help "scaffold" the application for us.
-      }
+      }, Thor::Shell::Color::YELLOW
 
       run 'rails generate scaffold dataset title author url description:text'
       run 'rake db:migrate'
 
       say %Q{
     This created a Dataset model (in ./app/models/dataset.rb), a controller, and some views.
-      }
+      }, Thor::Shell::Color::YELLOW
 
       ask %Q{
     Take a look around. Hit ENTER when you're ready to continue.
-      }
+      }, Thor::Shell::Color::GREEN
     end
 
     def but_maybe_we_want_to_store_our_metadata_as_xml
@@ -159,7 +163,7 @@ class HydraTutorialApp < Thor::Group
 
     In our world, we often find ourselves dealing with XML-based metadata. Fortunately, we have a gem called 'om' that can help us deal with XML metadata.
     To start using it, we need to add it to our Gemfile.
-      }
+      }, Thor::Shell::Color::YELLOW
 
       run %q{echo 'gem "om"' >> Gemfile}
       run 'bundle install'
@@ -169,21 +173,22 @@ class HydraTutorialApp < Thor::Group
     OM Documents on the filesystem (in db/datasets) and then add a simple OM terminology as a drop-in
     replacement for the ActiveRecord scaffold object.
 
-      }
+      }, Thor::Shell::Color::YELLOW
 
       run "mkdir db/datasets"
       copy_file "om_record.rb", "app/models/om_record.rb"
 
       say %Q{
     Press 'd' to see the difference between the Rails version and the OM version of Dataset.
-      }
+      }, Thor::Shell::Color::YELLOW
+
       copy_file "dataset_simple_om.rb", "app/models/dataset.rb"
 
       ask %Q{ 
     Take a look around. 
 
     Hit ENTER when you're ready to continue.
-      }
+      }, Thor::Shell::Color::GREEN
 
     end
 
@@ -193,7 +198,7 @@ class HydraTutorialApp < Thor::Group
     dealing with more complex data in well-known standards like MODS.
 
     Now we'll replace our custom schema with a basic MODS schema.
-      }
+      }, Thor::Shell::Color::YELLOW
       #copy_file "dataset_better_om.rb", "app/models/dataset.rb"
     end
 
@@ -207,16 +212,16 @@ class HydraTutorialApp < Thor::Group
     Fedora. We'll have a section on Solr and discovery interfaces later.
 
     [3] http://fedora-commons.org 
-      }
+      }, Thor::Shell::Color::YELLOW
 
       say %Q{
     Fedora runs as a java servlet inside a container like Tomcat or Jetty. Hydra provides a bundled
     version of Fedora and Solr for testing and development.
-      }
+      }, Thor::Shell::Color::YELLOW
 
       say %Q{
     We'll download a copy now. It may take awhile.
-      }
+      }, Thor::Shell::Color::YELLOW
       unless File.exists? '../jetty'
         run 'git clone git://github.com/projecthydra/hydra-jetty.git ../jetty'
       end
@@ -225,7 +230,7 @@ class HydraTutorialApp < Thor::Group
 
       say %Q{ 
     Now we're configure it and start the application.
-      }
+      }, Thor::Shell::Color::YELLOW
       run 'rake hydra:jetty:config'
 
       copy_file 'solr.yml', 'config/solr.yml'
@@ -233,12 +238,13 @@ class HydraTutorialApp < Thor::Group
 
       say %Q{
     And we'll use jettywrapper to help start and stop the service.
-      }
+      }, Thor::Shell::Color::YELLOW
+
       run %q{echo 'gem "jettywrapper"' >> Gemfile}
       run 'bundle install'
       run 'rake jetty:start'
 
-      ask %Q{ 
+      say %Q{ 
     Take a look around. Jetty should be running on port 8983. You can see the Fedora server at
 
       http://localhost:8983/fedora/
@@ -246,25 +252,30 @@ class HydraTutorialApp < Thor::Group
     And a Solr index at
 
       http://localhost:8983/solr/development/admin/
+      }, Thor::Shell::Color::YELLOW
 
+      ask %Q{
     Hit ENTER when you're ready to continue.
-      }
+      }, Thor::Shell::Color::GREEN
 
     end
 
     def convert_our_model_to_activefedora
       say %Q{
     We'll update our Dataset object to use ActiveFedora.
-      }
+      }, Thor::Shell::Color::YELLOW
+
       run %q{echo 'gem "active-fedora"' >> Gemfile}
       run 'bundle install'
       copy_file "dataset_af_om.rb", "app/models/dataset.rb"
 
-      ask %Q{
+      say %Q{
     You should be able to create new dataset objects and see them updated in Fedora.
+      }, Thor::Shell::Color::YELLOW
 
+      ask %Q{
     Hit ENTER when you're ready to continue.
-      }
+      }, Thor::Shell::Color::GREEN
     end
   end
 
@@ -275,11 +286,12 @@ class HydraTutorialApp < Thor::Group
     def add_blacklight_and_hydra
       say %Q{
     Eventually, common patterns get packaged up into new gems.
-      }
+      }, Thor::Shell::Color::YELLOW
 
       say %Q{ 
     We use blacklight to provide a search interface.
-      }
+      }, Thor::Shell::Color::YELLOW
+
       run %q{echo 'gem "blacklight"' >> Gemfile}
       run 'bundle install'
       run 'rails generate blacklight --devise'
@@ -287,7 +299,8 @@ class HydraTutorialApp < Thor::Group
       say %Q{
     And hydra-head bundles OM, ActiveFedora, etc for us. It also includes things like
     gated discovery and permissions (through hydra-access-controls).
-      }
+      }, Thor::Shell::Color::YELLOW
+
       run %Q{echo '\ngem "hydra-head"' >> Gemfile}
       run 'bundle install'
       run 'rails generate hydra:head User'
@@ -303,11 +316,12 @@ class HydraTutorialApp < Thor::Group
         say %Q{
     Fedora runs as a java servlet inside a container like Tomcat or Jetty. Hydra provides a bundled
     version of Fedora and Solr for testing and development.
-        }
+        }, Thor::Shell::Color::YELLOW
 
         say %Q{
     We'll download a copy now. It may take awhile.
-        }
+        }, Thor::Shell::Color::YELLOW
+
         unless File.exists? '../jetty'
           run 'git clone git://github.com/projecthydra/hydra-jetty.git ../jetty'
         end
@@ -325,6 +339,27 @@ class HydraTutorialApp < Thor::Group
         run 'rake jetty:start'
       end
 
+    end
+
+    def fixup_datasets
+      say %Q{
+    We need to make a couple of tweaks to our Dataset model and controller in order
+    to make it a Hydra-compliant object.
+
+    Because Hydra enforces access controls in the discovery layer (and, by default, no one
+    has access), we need to teach our model and controller about the Hydra rightsMetadata model
+    and have the controller tell the object who deposited it.
+      }, Thor::Shell::Color::YELLOW
+
+      copy_file "dataset_hydra_om.rb", "app/models/dataset.rb"
+
+      insert_into_class "app/controllers/datasets_controller.rb", DatasetsController do
+        "  include Hydra::AssetsControllerHelper"
+      end
+
+      insert_into_file "app/controllers/datasets_controller.rb", :after => "@dataset = Dataset.new(params[:dataset])\n" do
+        "apply_depositor_metadata(@dataset)"
+      end
     end
 
   end
@@ -413,7 +448,7 @@ class HydraTutorialApp < Thor::Group
   end
 
   def cleanup
-    yes? "All Done?"
+    yes? "All Done?", Thor::Shell::Color::GREEN
     inside 'hydra_tutorial_app' do
       Cleanup.start
     end
