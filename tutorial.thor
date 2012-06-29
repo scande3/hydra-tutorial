@@ -209,7 +209,6 @@ class HydraTutorialApp < Thor::Group
 
     [3] http://fedora-commons.org 
       }
-      copy_file "dataset_af_om.rb", "app/models/dataset.rb"
 
       say %Q{
     Fedora runs as a java servlet inside a container like Tomcat or Jetty. Hydra provides a bundled
@@ -245,47 +244,49 @@ class HydraTutorialApp < Thor::Group
 
       http://localhost:8983/solr/development/admin/
 
+    Hit ENTER when you're ready to continue.
+      }
+
+    end
+
+    def convert_our_model_to_activefedora
+      say %Q{
+    We'll update our Dataset object to use ActiveFedora.
+      }
+      run %q{echo 'gem "active_fedora"' >> Gemfile}
+      run 'bundle install'
+      copy_file "dataset_af_om.rb", "app/models/dataset.rb"
+
+      ask %Q{
     You should be able to create new dataset objects and see them updated in Fedora.
 
-      Hit ENTER when you're ready to continue.
-
+    Hit ENTER when you're ready to continue.
       }
     end
-
-    # but then we want repeating fields
-    # and tracking versioning..
-    #
-    # so we use XML and OM
-    #
-    # and we use Fedora and ActiveFedora
-    #
-    # and we want it to be searchable..
-    #
-
-    def install_hydra_jetty
-    end
-
-    # eventually, there are sharable, reusable components
   end
 
   class Application < Thor::Group
     include Thor::Actions
 
     # here are some gems that help
-    def add_things_to_gemfile
+    def add_blacklight_and_hydra
+      say %Q{
+    Eventually, common patterns get packaged up into new gems.
+      }
+
+      say %Q{ 
+    We use blacklight to provide a search interface.
+      }
       run %q{echo 'gem "blacklight"' >> Gemfile}
-      run %q{echo 'gem "hydra-head"' >> Gemfile}
-    end
-
-    def bundle_install
       run 'bundle install'
-    end
-
-    def run_blacklight_generators
       run 'rails generate blacklight --devise'
-    end
 
-    def run_hydra_generators
+      say %Q{
+    And hydra-head bundles OM, ActiveFedora, etc for us. It also includes things like
+    gated discovery and permissions (through hydra-access-controls).
+      }
+      run %q{echo 'gem "hydra-head"' >> Gemfile}
+      run 'bundle install'
       run 'rails generate hydra:head User'
     end
 
@@ -295,8 +296,18 @@ class HydraTutorialApp < Thor::Group
     end
 
     def install_hydra_jetty
-      run 'git clone git://github.com/projecthydra/hydra-jetty.git jetty'
-      run 'rake hydra:jetty:config'
+      if $quick # if we were in quick mode, we skipped this step from before.. 
+        say %Q{
+    Fedora runs as a java servlet inside a container like Tomcat or Jetty. Hydra provides a bundled
+    version of Fedora and Solr for testing and development.
+        }
+
+        say %Q{
+    We'll download a copy now. It may take awhile.
+        }
+        run 'git clone git://github.com/projecthydra/hydra-jetty.git jetty'
+        run 'rake hydra:jetty:config'
+      end
     end
 
   end
