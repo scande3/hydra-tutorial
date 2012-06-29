@@ -24,6 +24,7 @@ class Dataset < ActiveFedora::Base
     end
   end
 
+  include Hydra::ModelMixins::CommonMetadata
   include Hydra::ModelMethods
 
   has_metadata :name => "descMetadata", :type => DatastreamMetadata
