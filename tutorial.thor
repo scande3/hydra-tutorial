@@ -165,24 +165,91 @@ class HydraTutorialApp < Thor::Group
       run 'bundle install'
 
       say %Q{
-    Now let's adapt our Dataset model to use OM. Press 'd' to see the difference between the Rails version and the OM version.
+    Now let's adapt our Dataset model to use OM. First we'll add some code that allows us to persist our
+    OM Documents on the filesystem (in db/datasets) and then add a simple OM terminology as a drop-in
+    replacement for the ActiveRecord scaffold object.
+
       }
 
       run "mkdir db/datasets"
-      copy_file "dataset_simple_om.rb", "app/models/dataset.rb"
+      copy_file "om_record_in_files.rb", "app/model/om_record.rb"
 
       say %Q{
-    Some caveats:
-    For now, we'll pretend we're getting our metadata from somewhere on the filesystem.
+    Press 'd' to see the difference between the Rails version and the OM version of Dataset.
       }
-
+      copy_file "dataset_simple_om.rb", "app/models/dataset.rb"
 
       ask %Q{ 
-    Take a look around. Hit ENTER when you're ready to continue.
+    Take a look around. 
+
+    Hit ENTER when you're ready to continue.
       }
 
       exit
 
+    end
+
+    def lets_make_a_better_terminology
+      say %Q{
+    In the last step, we made up a basic XML schema for our data. In the real world, we're probably
+    dealing with more complex data in well-known standards like MODS.
+
+    Now we'll replace our custom schema with a basic MODS schema.
+      }
+    end
+
+    def stop_using_the_filesystem
+      say %Q{
+    Storing the documents on the filesystem has worked so far, but what if we wanted to start
+    managing whole objects (instead of XML documents), version datastream, keep checksums...
+
+    We use Fedora [3], and ActiveFedora to work with data in our repository. We also use Solr to
+    index and provide searching, faceting, etc for our content. For now, you can just concentrate on
+    Fedora. We'll have a section on Solr and discovery interfaces later.
+
+    [3] http://fedora-commons.org 
+      }
+      copy_file "dataset_af_om.rb", "app/models/dataset.rb"
+
+      say %Q{
+    Fedora runs as a java servlet inside a container like Tomcat or Jetty. Hydra provides a bundled
+    version of Fedora and Solr for testing and development.
+      }
+
+      say %Q{
+    We'll download a copy now. It may take awhile.
+      }
+      run 'git clone git://github.com/projecthydra/hydra-jetty.git jetty'
+
+      say %Q{ 
+    Now we're configure it and start the application.
+      }
+      run 'rake hydra:jetty:config'
+
+      copy_file 'solr.yml', 'config/solr.yml'
+      copy_file 'fedora.yml', 'config/fedora.yml'
+
+      say %Q{
+    And we'll use jettywrapper to help start and stop the service.
+      }
+      run %q{echo 'gem "jettywrapper"' >> Gemfile}
+      run 'bundle install'
+      run 'rake jetty:start'
+
+      ask %Q{ 
+    Take a look around. Jetty should be running on port 8983. You can see the Fedora server at
+
+      http://localhost:8983/fedora/
+
+    And a Solr index at
+
+      http://localhost:8983/solr/development/admin/
+
+    You should be able to create new dataset objects and see them updated in Fedora.
+
+      Hit ENTER when you're ready to continue.
+
+      }
     end
 
     # but then we want repeating fields
@@ -196,8 +263,6 @@ class HydraTutorialApp < Thor::Group
     #
 
     def install_hydra_jetty
-      run 'git clone git://github.com/projecthydra/hydra-jetty.git jetty'
-      run 'rake hydra:jetty:config'
     end
 
     # eventually, there are sharable, reusable components
@@ -210,7 +275,6 @@ class HydraTutorialApp < Thor::Group
     def add_things_to_gemfile
       run %q{echo 'gem "blacklight"' >> Gemfile}
       run %q{echo 'gem "hydra-head"' >> Gemfile}
-      run %q{echo 'gem "jettywrapper"' >> Gemfile}
     end
 
     def bundle_install
