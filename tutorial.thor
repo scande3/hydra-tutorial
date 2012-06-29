@@ -307,28 +307,25 @@ class HydraTutorialApp < Thor::Group
         }
         run 'git clone git://github.com/projecthydra/hydra-jetty.git jetty'
         run 'rake hydra:jetty:config'
+
+        run %q{echo 'gem "jettywrapper"' >> Gemfile}
+        run 'bundle install'
+        run 'rake jetty:start'
       end
     end
 
   end
 
-  class Models < Thor::Group
+  class MakeItNice < Thor::Group
     include Thor::Actions
 
     # now we want our app to do stuff.. so lets enhance our old models
 
-  end
 
-  class StartServices < Thor::Group
-    include Thor::Actions
+    def sprinkle_some_css
 
-    def start_jetty
-      run 'rake jetty:start'
     end
 
-    def start_rails
-      run 'rails server'
-    end
   end
 
   class Tests < Thor::Group
@@ -342,7 +339,6 @@ class HydraTutorialApp < Thor::Group
     include Thor::Actions
 
     # here are some steps you can do to get started
-    
     def create_a_user_account
 
     end
@@ -371,10 +367,11 @@ class HydraTutorialApp < Thor::Group
     end
   end
 
-  def models
+  def make_it_nice
+    return if $quick
     inside 'hydra_tutorial_app' do
-      Models.start
-    end
+      MakeItNice.start
+    end 
   end
 
   def tests
@@ -383,13 +380,8 @@ class HydraTutorialApp < Thor::Group
     end
   end
 
-  def start_services
-    inside 'hydra_tutorial_app' do
-      StartServices.start
-    end
-  end
-
   def initial_steps
+    return if $quick
     inside 'hydra_tutorial_app' do
       InitialSteps.start
     end
