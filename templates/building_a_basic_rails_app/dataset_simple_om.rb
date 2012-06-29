@@ -1,6 +1,8 @@
-class Dataset < ActiveFedora::Base
+class Dataset < OmRecord # OmRecord contains code that lets us pretend this Dataset is a drop-in replacement for the ActiveRecord.
   include OM::XML::Document
 
+  ##
+  # Here's the important part. We're mapping XML into Ruby.
   set_terminology do |t|
     t.root :path => 'root', :xmlns => nil
     t.title

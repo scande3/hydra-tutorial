@@ -172,7 +172,7 @@ class HydraTutorialApp < Thor::Group
       }
 
       run "mkdir db/datasets"
-      copy_file "om_record_in_files.rb", "app/model/om_record.rb"
+      copy_file "om_record.rb", "app/model/om_record.rb"
 
       say %Q{
     Press 'd' to see the difference between the Rails version and the OM version of Dataset.
@@ -185,8 +185,6 @@ class HydraTutorialApp < Thor::Group
     Hit ENTER when you're ready to continue.
       }
 
-      exit
-
     end
 
     def lets_make_a_better_terminology
@@ -196,6 +194,7 @@ class HydraTutorialApp < Thor::Group
 
     Now we'll replace our custom schema with a basic MODS schema.
       }
+      #copy_file "dataset_better_om.rb", "app/models/dataset.rb"
     end
 
     def stop_using_the_filesystem
@@ -253,7 +252,7 @@ class HydraTutorialApp < Thor::Group
       say %Q{
     We'll update our Dataset object to use ActiveFedora.
       }
-      run %q{echo 'gem "active_fedora"' >> Gemfile}
+      run %q{echo 'gem "active-fedora"' >> Gemfile}
       run 'bundle install'
       copy_file "dataset_af_om.rb", "app/models/dataset.rb"
 
@@ -352,7 +351,7 @@ class HydraTutorialApp < Thor::Group
     Prerequisites.start
   end
 
-  def building_a_basic_rails_app 
+  def building_a_basic_rails_app
     return if $quick
 
     inside 'hydra_tutorial_app' do
@@ -361,7 +360,6 @@ class HydraTutorialApp < Thor::Group
   end
   
   def application
-    exit
     inside 'hydra_tutorial_app' do
       Application.start
     end
