@@ -5,35 +5,112 @@ require 'thor'
 require 'thor/group'
 
 class HydraTutorialApp < Thor::Group
+  class_option :quick, :default => false
+
+  def welcome
+    $quick = options[:quick]
+    say %Q{
+    Welcome to this Hydra tutorial. We're going to go through some steps to
+    set up a working Hydra head. We'll build the application gradually, and give you
+    opportunities to stop and look around on the way.
+    }
+
+    if $quick
+      say %Q{
+    We'll quickly build the application, give you some Hydra models, and send you on your way.
+      }
+
+    else
+      say %Q{
+    We'll go through this tour slowly, starting by creating a pure Rails application, 
+    and then introduce Hydra components. If you want to speed things along, 
+      }
+
+     exit unless yes? %Q{
+    If you want to speed things along, you should quit this tutorial (by saying 'no'), 
+    and run it again with ./tutorial.thor --quick=yes. 
+
+    Do you want to continue at this pace? (y/n) }
+    end
+  end
+
   include Thor::Actions
 
   class Prerequisites < Thor::Group
+    class_option :quick, :default => false
     include Thor::Actions
 
     def install_ruby
-      # since you're here, you've done this..
-      #
-      # but does your ruby install check out?
+      return if $quick
+      say %Q{ 
+    Obviously, if you can run this tutorial, you have already installed ruby.
+      }
+
+      ruby_executable = run 'which ruby', :capture => true
+
+      say %Q{
+    You are running this using:
+    #{ruby_executable}
+      }
+
+      if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_Executable =~ /Users/
+        say %Q{
+    It looks like you're using rvm/rbenv/etc. (with a gemset?) We'll use this environment to build the application.
+      }
+
+      else
+
+      say %Q{
+    We checked, and it looks like you might be using a system-wide ruby. We'd like to
+    suggest you use somethng like rvm [1], rbenv [2], etc to manage your ruby projects.
+
+    [1] http://rvm.io/
+    [2] https://github.com/sstephenson/rbenv/
+      }
+
+      exit unless yes? %Q{
+    You can continue and hope for the best, or go install one of these ruby managers, which may make your life easier.
+
+    Do you want to continue anyway? (y/n)
+      }
+      end
+
     end
 
-    # lets get bundler and rails going
     def install_bundler_and_rails
+      say %Q{
+    We're going to install some prerequisite gems in order to create our skeleton Rails application.
+      }
       run 'gem install bundler rails'
     end
 
-    # and start a new rails app
     def new_rails_app
+      say %Q{
+    Now we'll create the application.
+      }
       run 'rails new hydra_tutorial_app'
       run 'cd hydra_tutorial_app'
+
     end
 
     def out_of_the_box
-      # it's just a framework..
-      yes?
+      return if $quick
+      ask %Q{ 
+    Here's a chance to look around. You can see the structure of a Rails application.
+       ./app
+       ./config
+       ./lib
+       Gemfile
+
+    Hit any key when you're ready to continue.
+      }
     end
 
     # and then clean up some cruft
     def remove_public_index
+      say %Q{
+    We'll now remove the Rails directions from the application.
+      }
       within 'hydra_tutorial_app' do
         run 'rm public/index.html'
       end
