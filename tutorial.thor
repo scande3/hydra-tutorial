@@ -6,8 +6,8 @@ require 'thor/group'
 
 $base_templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
 
-class HydraTutorialApp < Thor #< Thor::Group
-  #class_option :quick, :default => false
+class HydraTutorialApp < Thor::Group
+  class_option :quick, :default => false
 
   def welcome
     $quick = options[:quick]
@@ -169,11 +169,16 @@ class HydraTutorialApp < Thor #< Thor::Group
       }
 
       run "mkdir db/datasets"
-      copy_file "dataset_1.rb", "app/models/dataset.rb"
+      copy_file "dataset_simple_om.rb", "app/models/dataset.rb"
 
       say %Q{
     Some caveats:
     For now, we'll pretend we're getting our metadata from somewhere on the filesystem.
+      }
+
+
+      ask %Q{ 
+    Take a look around. Hit ENTER when you're ready to continue.
       }
 
       exit
@@ -272,12 +277,10 @@ class HydraTutorialApp < Thor #< Thor::Group
     end
   end
 
-  desc :prerequisites, ""
   def prerequisites
     Prerequisites.start
   end
 
-  desc :building_a_basic_rails_app, ""
   def building_a_basic_rails_app 
     return if $quick
 
@@ -287,6 +290,7 @@ class HydraTutorialApp < Thor #< Thor::Group
   end
   
   def application
+    exit
     inside 'hydra_tutorial_app' do
       Application.start
     end

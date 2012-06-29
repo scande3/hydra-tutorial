@@ -7,6 +7,7 @@ class Dataset
     t.root :path => 'root', :xmlns => nil
     t.title
     t.author
+    t.url
     t.description
   end
 
@@ -15,6 +16,7 @@ class Dataset
       xml.root do
         xml.title
         xml.author
+        xml.url
         xml.description
       end
     end.doc
@@ -22,13 +24,20 @@ class Dataset
 
   ##
   # This stuff is so we can store and retrieve data off the filesystem. Don't worry about it.
+  extend ActiveModel::Naming
+  include ActiveModel::Conversion
+
   attr_writer :file
+  
+  attr_accessor :name
+  attr_reader   :errors
   def initialize options={}
 
+    @errors = ActiveModel::Errors.new(self)
     self.ng_xml = self.class.xml_template
 
     options.each do |k,v|
-      self.k = v
+      send("#{k}=", v)
     end
   end
 
@@ -44,6 +53,10 @@ class Dataset
     File.open(file, 'w') { |f| f.puts ng_xml.to_s }
   end
 
+  def persisted?
+    File.exists? file
+  end
+
   def self.all
     Dir.glob('db/datasets/*').map do |f|
       Dataset.from_file(f)
@@ -55,11 +68,10 @@ class Dataset
   end
 
   def self.from_file f
-    d = Dataset.load_xml(File.read(f))
+    d = Dataset.from_xml(File.read(f))
 
     d.file = f
 
     d
   end
-
 end
