@@ -172,7 +172,7 @@ class HydraTutorialApp < Thor::Group
       }
 
       run "mkdir db/datasets"
-      copy_file "om_record.rb", "app/model/om_record.rb"
+      copy_file "om_record.rb", "app/models/om_record.rb"
 
       say %Q{
     Press 'd' to see the difference between the Rails version and the OM version of Dataset.
