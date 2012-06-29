@@ -217,7 +217,11 @@ class HydraTutorialApp < Thor::Group
       say %Q{
     We'll download a copy now. It may take awhile.
       }
-      run 'git clone git://github.com/projecthydra/hydra-jetty.git jetty'
+      unless File.exists? '../jetty'
+        run 'git clone git://github.com/projecthydra/hydra-jetty.git ../jetty'
+      end
+      run 'cp -R ../jetty jetty'
+#      run 'rake hydra:jetty:config'
 
       say %Q{ 
     Now we're configure it and start the application.
@@ -284,7 +288,7 @@ class HydraTutorialApp < Thor::Group
     And hydra-head bundles OM, ActiveFedora, etc for us. It also includes things like
     gated discovery and permissions (through hydra-access-controls).
       }
-      run %q{echo 'gem "hydra-head"' >> Gemfile}
+      run %Q{echo '\ngem "hydra-head"' >> Gemfile}
       run 'bundle install'
       run 'rails generate hydra:head User'
     end
@@ -304,13 +308,23 @@ class HydraTutorialApp < Thor::Group
         say %Q{
     We'll download a copy now. It may take awhile.
         }
-        run 'git clone git://github.com/projecthydra/hydra-jetty.git jetty'
+        unless File.exists? '../jetty'
+          run 'git clone git://github.com/projecthydra/hydra-jetty.git ../jetty'
+        end
+        run 'cp -R ../jetty jetty'
+
         run 'rake hydra:jetty:config'
 
         run %q{echo 'gem "jettywrapper"' >> Gemfile}
         run 'bundle install'
         run 'rake jetty:start'
+      else
+
+        run 'rake jetty:stop'
+        run 'rake hydra:jetty:config'
+        run 'rake jetty:start'
       end
+
     end
 
   end
@@ -343,8 +357,21 @@ class HydraTutorialApp < Thor::Group
     end
 
     def explore_the_application
+      run 'rails s'
 
     end
+  end
+
+  
+  class Cleanup < Thor::Group
+    include Thor::Actions
+
+    # and write some tests
+    #
+    def stop_jetty
+      run 'rake jetty:stop'
+    end
+
   end
 
   def prerequisites
@@ -382,6 +409,13 @@ class HydraTutorialApp < Thor::Group
     return if $quick
     inside 'hydra_tutorial_app' do
       InitialSteps.start
+    end
+  end
+
+  def cleanup
+    yes? "All Done?"
+    inside 'hydra_tutorial_app' do
+      Cleanup.start
     end
   end
 
