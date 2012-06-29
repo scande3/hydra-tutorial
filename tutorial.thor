@@ -4,8 +4,10 @@ require 'rubygems'
 require 'thor'
 require 'thor/group'
 
-class HydraTutorialApp < Thor::Group
-  class_option :quick, :default => false
+$base_templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
+
+class HydraTutorialApp < Thor #< Thor::Group
+  #class_option :quick, :default => false
 
   def welcome
     $quick = options[:quick]
@@ -102,7 +104,7 @@ class HydraTutorialApp < Thor::Group
        ./lib
        Gemfile
 
-    Hit any key when you're ready to continue.
+    Hit ENTER when you're ready to continue.
       }
     end
 
@@ -111,7 +113,7 @@ class HydraTutorialApp < Thor::Group
       say %Q{
     We'll now remove the Rails directions from the application.
       }
-      within 'hydra_tutorial_app' do
+      inside 'hydra_tutorial_app' do
         run 'rm public/index.html'
       end
     end
@@ -120,14 +122,64 @@ class HydraTutorialApp < Thor::Group
   class BuildingABasicRailsApp < Thor::Group
     include Thor::Actions
 
-    # lets build a basic app..
-    # we want to track images and metadata
-    #
-    # so we build some models
-    # and all is good..
-    #
-    # rake db:migrate
-    #
+    def self.source_paths
+      [File.join($base_templates_path, "building_a_basic_rails_app")]
+    end
+
+    def notes
+      say %Q{
+    We're going to build an application to track (simplified) datasets and their metadata.
+      }
+    end
+
+    def as_if_this_was_just_a_rails_applications
+      say %Q{
+    If we wanted to build a Rails application to do this, we would add some models and controllers.
+
+    Rails can help "scaffold" the application for us.
+      }
+
+      run 'rails generate scaffold dataset title author url description:text'
+      run 'rake db:migrate'
+
+      say %Q{
+    This created a Dataset model (in ./app/models/dataset.rb), a controller, and some views.
+      }
+
+      ask %Q{
+    Take a look around. Hit ENTER when you're ready to continue.
+      }
+    end
+
+    def but_maybe_we_want_to_store_our_metadata_as_xml
+      say %Q{
+    But it turns out a relational database is not a great place to store complex metadata objects, 
+    with nesting, hierarchy, repetition, etc like we often fine in the digital library world. We'd 
+    also like to store and manage our data in an exchangeable form rather than a custom-built database.
+
+    In our world, we often find ourselves dealing with XML-based metadata. Fortunately, we have a gem called 'om' that can help us deal with XML metadata.
+    To start using it, we need to add it to our Gemfile.
+      }
+
+      run %q{echo 'gem "om"' >> Gemfile}
+      run 'bundle install'
+
+      say %Q{
+    Now let's adapt our Dataset model to use OM. Press 'd' to see the difference between the Rails version and the OM version.
+      }
+
+      run "mkdir db/datasets"
+      copy_file "dataset_1.rb", "app/models/dataset.rb"
+
+      say %Q{
+    Some caveats:
+    For now, we'll pretend we're getting our metadata from somewhere on the filesystem.
+      }
+
+      exit
+
+    end
+
     # but then we want repeating fields
     # and tracking versioning..
     #
@@ -173,6 +225,11 @@ class HydraTutorialApp < Thor::Group
       run 'rake db:test:prepare'
     end
 
+    def install_hydra_jetty
+      run 'git clone git://github.com/projecthydra/hydra-jetty.git jetty'
+      run 'rake hydra:jetty:config'
+    end
+
   end
 
   class Models < Thor::Group
@@ -215,10 +272,20 @@ class HydraTutorialApp < Thor::Group
     end
   end
 
+  desc :prerequisites, ""
   def prerequisites
     Prerequisites.start
   end
 
+  desc :building_a_basic_rails_app, ""
+  def building_a_basic_rails_app 
+    return if $quick
+
+    inside 'hydra_tutorial_app' do
+      BuildingABasicRailsApp.start
+    end
+  end
+  
   def application
     inside 'hydra_tutorial_app' do
       Application.start
