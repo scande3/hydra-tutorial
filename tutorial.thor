@@ -39,10 +39,12 @@ class HydraTutorialApp < Thor::Group
   end
 
   include Thor::Actions
+  include Rails::Generators::Actions
 
   class Prerequisites < Thor::Group
     class_option :quick, :default => false
     include Thor::Actions
+    include Rails::Generators::Actions
 
     def install_ruby
       return if $quick
@@ -120,13 +122,14 @@ class HydraTutorialApp < Thor::Group
     We'll now remove the Rails directions from the application.
       }, Thor::Shell::Color::YELLOW
       inside 'hydra_tutorial_app' do
-        run 'rm public/index.html'
+        remove_file 'public/index.html'
       end
     end
   end
 
   class BuildingABasicRailsApp < Thor::Group
     include Thor::Actions
+    include Rails::Generators::Actions
 
     def self.source_paths
       [File.join($base_templates_path, "building_a_basic_rails_app")]
@@ -145,8 +148,8 @@ class HydraTutorialApp < Thor::Group
     Rails can help "scaffold" the application for us.
       }, Thor::Shell::Color::YELLOW
 
-      run 'rails generate scaffold dataset title author url description:text'
-      run 'rake db:migrate'
+      generate 'scaffold', 'dataset', 'title', 'author', 'url', 'description:text'
+      rake 'db:migrate'
 
       say %Q{
     This created a Dataset model (in ./app/models/dataset.rb), a controller, and some views.
@@ -167,7 +170,7 @@ class HydraTutorialApp < Thor::Group
     To start using it, we need to add it to our Gemfile.
       }, Thor::Shell::Color::YELLOW
 
-      run %q{echo 'gem "om"' >> Gemfile}
+      gem 'om'
       run 'bundle install'
 
       say %Q{
@@ -216,7 +219,7 @@ class HydraTutorialApp < Thor::Group
     We'll download a copy now. It may take awhile.
       }, Thor::Shell::Color::YELLOW
       unless File.exists? '../jetty'
-        run 'git clone git://github.com/projecthydra/hydra-jetty.git ../jetty'
+        git :clone => 'git://github.com/projecthydra/hydra-jetty.git ../jetty'
       end
       run 'cp -R ../jetty jetty'
 #      run 'rake hydra:jetty:config'
@@ -224,7 +227,7 @@ class HydraTutorialApp < Thor::Group
       say %Q{ 
     Now we're configure it and start the application.
       }, Thor::Shell::Color::YELLOW
-      run 'rake hydra:jetty:config'
+      rake 'hydra:jetty:config'
 
       copy_file 'solr.yml', 'config/solr.yml'
       copy_file 'fedora.yml', 'config/fedora.yml'
@@ -233,9 +236,9 @@ class HydraTutorialApp < Thor::Group
     And we'll use jettywrapper to help start and stop the service.
       }, Thor::Shell::Color::YELLOW
 
-      run %q{echo 'gem "jettywrapper"' >> Gemfile}
+      gem 'jettywrapper'
       run 'bundle install'
-      run 'rake jetty:start'
+      rake 'jetty:start'
 
       say %Q{ 
     Take a look around. Jetty should be running on port 8983. You can see the Fedora server at
@@ -258,7 +261,7 @@ class HydraTutorialApp < Thor::Group
     We'll update our Dataset object to use ActiveFedora.
       }, Thor::Shell::Color::YELLOW
 
-      run %q{echo 'gem "active-fedora"' >> Gemfile}
+      gem 'active-fedora'
       run 'bundle install'
       copy_file "dataset_af_om.rb", "app/models/dataset.rb"
 
@@ -292,7 +295,7 @@ class HydraTutorialApp < Thor::Group
 
       gem 'blacklight'
       run 'bundle install'
-      run 'rails generate blacklight --devise'
+      generate 'blacklight', '--devise'
 
       say %Q{
     And hydra-head bundles OM, ActiveFedora, etc for us. It also includes things like
@@ -301,12 +304,12 @@ class HydraTutorialApp < Thor::Group
 
       gem 'hydra-head', "~> 4.1"
       run 'bundle install'
-      run 'rails generate hydra:head User'
+      generate 'hydra:head', 'User'
     end
 
     def rake_db_migrate
-      run 'rake db:migrate'
-      run 'rake db:test:prepare'
+      rake 'db:migrate'
+      rake 'db:test:prepare'
     end
 
     def install_hydra_jetty
@@ -321,20 +324,20 @@ class HydraTutorialApp < Thor::Group
         }, Thor::Shell::Color::YELLOW
 
         unless File.exists? '../jetty'
-          run 'git clone git://github.com/projecthydra/hydra-jetty.git ../jetty'
+          git :clone => 'git://github.com/projecthydra/hydra-jetty.git ../jetty'
         end
         run 'cp -R ../jetty jetty'
 
-        run 'rake hydra:jetty:config'
+        rake 'hydra:jetty:config'
 
         gem 'jettywrapper'
         run 'bundle install'
-        run 'rake jetty:start'
+        rake 'jetty:start'
       else
 
-        run 'rake jetty:stop'
-        run 'rake hydra:jetty:config'
-        run 'rake jetty:start'
+        rake 'jetty:stop'
+        rake 'hydra:jetty:config'
+        rake 'jetty:start'
       end
 
     end
@@ -381,6 +384,7 @@ class HydraTutorialApp < Thor::Group
 
   class MakeItNice < Thor::Group
     include Thor::Actions
+    include Rails::Generators::Actions
 
     def self.source_paths
       [File.join($base_templates_path, "make_it_nice")]
@@ -405,6 +409,7 @@ class HydraTutorialApp < Thor::Group
 
   class Tests < Thor::Group
     include Thor::Actions
+    include Rails::Generators::Actions
 
     # and write some tests
 
@@ -412,6 +417,7 @@ class HydraTutorialApp < Thor::Group
 
   class InitialSteps < Thor::Group
     include Thor::Actions
+    include Rails::Generators::Actions
 
     # here are some steps you can do to get started
     def create_a_user_account
@@ -427,11 +433,12 @@ class HydraTutorialApp < Thor::Group
   
   class Cleanup < Thor::Group
     include Thor::Actions
+    include Rails::Generators::Actions
 
     # and write some tests
     #
     def stop_jetty
-      run 'rake jetty:stop'
+      rake 'jetty:stop'
     end
 
   end
