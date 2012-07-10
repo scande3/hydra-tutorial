@@ -134,6 +134,12 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     end
   end
 
+  def add_tests
+    inside $application_root do
+      AddTests.start
+    end
+  end
+
   def cleanup
     inside $application_root do
       Cleanup.start
@@ -600,6 +606,40 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       }, STATEMENT
 
       rails_server('/records/new') unless $quick
+    end
+
+  end
+
+  class AddTests < Thor::Group
+    include Thor::Actions
+    include Rails::Generators::Actions
+    include TutorialActions
+
+    def self.source_paths
+      [File.join($base_templates_path, "add_tests")]
+    end
+
+
+    def install_rspec
+      gem_group :development, :test do
+        gem 'rspec'
+        gem 'rspec-rails'
+      end
+      run 'bundle install'
+
+      generate 'rspec:install'
+    end
+    
+    def write_our_first_test
+      copy_file 'records_controller_spec.rb', 'spec/controlers/records_controller_spec.rb'
+    end
+
+    def run_tests
+      run 'rspec'
+    end
+
+    def a_model_test
+   #   copy_file 'record_test.rb', 'spec/models/record_test.rb'
     end
 
   end
