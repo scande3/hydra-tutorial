@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "hydra-tutorial"
-  s.version = "0.0.1"
+  s.version = "0.0.2"
   s.platform = Gem::Platform::RUBY
   s.authors = ["Chris Beer"]
   s.email = ["hydra-tech@googlegroups.com"]
@@ -13,4 +13,5 @@ Gem::Specification.new do |s|
   s.add_dependency "bundler"
 
   s.files = `git ls-files`.split("\n")
+  s.executables = ['hydra-tutorial']
 end

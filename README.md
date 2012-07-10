@@ -6,10 +6,7 @@
  * [[RVM|https://rvm.beginrescueend.com/rvm/install/]] (recommended)
 
 ```bash
-$ gem install bundler
-$ bundle install
+$ gem install hydra-tutorial
+$ hydra-tutorial
 ```
 
-```bash
-$ ./tutorial.thor
-```
