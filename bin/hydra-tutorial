@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+exec File.expand_path(File.join(File.dirname(__FILE__), '..', 'open-repositories-tutorial.thor')), *ARGV
+
