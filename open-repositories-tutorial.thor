@@ -76,10 +76,8 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     What do you want to call your application?
     }, QUESTION unless $quick
 
-    name = name.to_s.strip!
-
-    name ||= 'hydra_tutorial_app'
-
+    name = name.to_s.strip
+    name = 'hydra_tutorial_app' if name.empty?
 
 
     $application_name = name
