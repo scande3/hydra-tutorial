@@ -129,7 +129,6 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
   def cleanup
     inside $application_root do
-      continue_prompt
       Cleanup.start
     end
   end
