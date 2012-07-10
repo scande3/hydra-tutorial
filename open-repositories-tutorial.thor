@@ -114,6 +114,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
   def cleanup
     inside $application_root do
+      continue_prompt
       rake 'jetty:stop'
     end
   end
@@ -450,7 +451,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
    and edit existing records. Start by creating a new record:
       }, STATEMENT
 
-      rails_server '/records/new'
+      rails_server '/records/new' unless $quick
     end
 
   end
