@@ -81,10 +81,19 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     name ||= 'hydra_tutorial_app'
 
 
+
     $application_name = name
 
     dir = $application_name.parameterize('_')
     $application_root = dir
+
+    if File.exists? $application_root
+      say %Q{
+        #{$application_root} already exists. Either remove it or provide a different
+        application name.
+      }, Thor::Shell::Color::RED
+      exit
+    end
 
     say %Q{
     We'll generate a stub application #{$application_name} into the folder 
