@@ -18,6 +18,37 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   include Thor::Actions
   include Rails::Generators::Actions
 
+  module TutorialActions
+    def continue_prompt
+      ask %Q{
+    HIT <ENTER> KEY TO CONTINUE
+      }, QUESTION 
+    end
+
+    def rails_console
+      say %Q{
+    We'll launch the console again. Give some of those commands a try.
+
+    Hit Ctrl-D (^D) to stop the Rails console and continue this tutorial.
+      }, STATEMENT
+
+      run "rails c"
+    end
+
+    def rails_server url = '/'
+      say %Q{
+    We'll start the Rails server for you. It should be available in your browser at:
+
+       http://localhost:3000#{url}
+
+    Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.
+      }, STATEMENT
+
+      run "rails s"
+    end
+  end
+
+  include TutorialActions
   class_option :quick, :default => false
 
   def welcome
@@ -88,15 +119,15 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   end
 
   class Prerequisites < Thor::Group
-    class_option :quick, :default => false
     include Thor::Actions
     include Rails::Generators::Actions
+    include TutorialActions
 
     def install_ruby
       return if $quick
       say %Q{ 
     Obviously, if you can run this tutorial, you have already installed ruby.
-      }, Thor::Shell::Color::YELLOW
+      }, STATEMENT
 
 
       ruby_executable = run 'which ruby', :capture => true
@@ -104,12 +135,12 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       say %Q{
     You are running this using:
     #{ruby_executable}
-      }, Thor::Shell::Color::YELLOW
+      }, STATEMENT
 
       if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_Executable =~ /Users/
         say %Q{
     It looks like you're using rvm/rbenv/etc. (with a gemset?) We'll use this environment to build the application.
-      }, Thor::Shell::Color::YELLOW
+      }, STATEMENT
 
       else
 
@@ -117,15 +148,14 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     We checked, and it looks like you might be using a system-wide ruby. We suggest
     you use somethng like rvm [1], rbenv [2], etc to manage your ruby projects.
 
+    You can continue and hope for the best, or go install one of these ruby managers, which may make your life easier.
+
     [1] http://rvm.io/
     [2] https://github.com/sstephenson/rbenv/
       }, Thor::Shell::Color::RED
 
-      ask? %Q{
-    You can continue and hope for the best, or go install one of these ruby managers, which may make your life easier.
+      continue_prompt unless $quick
 
-    HIT <ENTER> KEY TO CONTINUE
-      }, QUESTION
       end
 
     end
@@ -133,7 +163,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     def install_bundler_and_rails
       say %Q{
     We're going to install some prerequisite gems in order to create our skeleton Rails application.
-      }, Thor::Shell::Color::YELLOW
+      }, STATEMENT
       run 'gem install bundler rails'
     end
 
@@ -156,20 +186,21 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
        Gemfile
       }, STATEMENT
 
-      say %Q{
-    We'll also start the Rails server so you can preview the application in your browser.
 
-    Hit Ctrl-C (^C) when you're ready to continue.
+      say %Q{
+    If we launched the Rails application server, we can see the application running in the browser
+    and you can see if everything is working.
       }, STATEMENT
 
-      run "rails s"
 
+      rails_server unless $quick
     end
   end
 
   class BuildingABasicRailsApp < Thor::Group
     include Thor::Actions
     include Rails::Generators::Actions
+    include TutorialActions
 
     def self.source_paths
       [File.join($base_templates_path, "building_a_basic_rails_app")]
@@ -179,13 +210,13 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     def adding_dependencies
 
       say %Q{
-    Fedora runs as a java servlet inside a container like Tomcat or Jetty. Hydra provides a bundled
+    Fedora runs as a Java servlet inside a container like Tomcat or Jetty. Hydra provides a bundled
     version of Fedora and Solr for testing and development.
-      }, Thor::Shell::Color::YELLOW
+      }, STATEMENT
 
       say %Q{
     We'll download a copy now. It may take awhile.
-      }, Thor::Shell::Color::YELLOW
+      }, STATEMENT
       unless File.exists? '../jetty'
         git :clone => 'git://github.com/projecthydra/hydra-jetty.git ../jetty'
       end
@@ -194,16 +225,23 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     end
 
     def jetty_configuration 
+      say %Q{
+    We'll add some configuration yml files with information to connect to Solr and Fedora.
+      }, STATEMENT
 
       copy_file 'solr.yml', 'config/solr.yml'
       copy_file 'fedora.yml', 'config/fedora.yml'
 
       say %Q{
-    We'll use jettywrapper to help start and stop the service.
-      }, Thor::Shell::Color::YELLOW
+    Add the 'jettywrapper' gem, which adds Rake tasks for start and stop Jetty.
+      }, STATEMENT
 
       gem 'jettywrapper'
       run 'bundle install'
+
+      say %Q{
+    Starting Jetty
+      }, STATEMENT
       rake 'jetty:start'
 
       say %Q{ 
@@ -214,22 +252,15 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     And a Solr index at
 
       http://localhost:8983/solr/development/admin/
-      }, Thor::Shell::Color::YELLOW
+      }, STATEMENT
 
-      ask %Q{
-    Hit ENTER when you're ready to continue.
-      }, Thor::Shell::Color::GREEN unless $quick
+      continue_prompt unless $quick
 
     end
 
     # and then clean up some cruft
     def remove_public_index
-      say %Q{
-    We'll now remove the Rails directions from the application.
-      }, STATEMENT
-      inside $application_root do
-        remove_file 'public/index.html'
-      end
+      remove_file 'public/index.html'
     end
 
   end
@@ -237,6 +268,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   class AddingOurModels < Thor::Group
     include Thor::Actions
     include Rails::Generators::Actions
+    include TutorialActions
 
     def self.source_paths
       [File.join($base_templates_path, "adding_our_models")]
@@ -244,59 +276,181 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
     def add_activefedora
       say %Q{
-    We're going to use the active-fedora gem to help create our Fedora objects.
+    The active-fedora gem provides a way to model Fedora objects within Ruby. It will help
+    you create Ruby models for creating, updating and reading objects from Fedora using a 
+    domain-specific language (DSL) similar to the Rails' ActiveRecord.
+
+    The om gem provides mechanisms for mapping XML documents into Ruby.
+
+    We'll add both of these to the Gemfile.
       }, STATEMENT
+
       gem 'active-fedora'
       gem 'om'
       run 'bundle install'
-
-      ask %Q{
-    Hit ENTER when you're ready to continue.
-      }, Thor::Shell::Color::GREEN unless $quick
     end
 
     def add_initial_model
+      say %Q{ 
+    Now we'll add a basic ActiveFedora stub model for a 'Record'. 
+      }, STATEMENT
+
       copy_file "basic_af_model.rb", "app/models/record.rb"
+
+      say %Q{ 
+    It looks like this:
+      }, STATEMENT
+
       print_wrapped File.read('app/models/record.rb')
     end
 
     def rails_console_tour
+
       say %Q{
-        obj = Record.new
-        obj.descMetadata.content = '<my_xml_content />'
-        obj.save
-      }
+        Now we'll give you a chance to look at the Record model. If you launch the 
+        Rails interactive console, we can create and manipulate our object:
+
+           ## CREATE
+           > obj = Record.new
+           > obj.descMetadata.content = 'e.g. <my_xml_content />'
+           > obj.save
+
+           > obj.pid  
+           # => e.g. 'changeme:1'
+
+           ## RETRIEVE
+           > obj = Record.find('changeme:1')
+           > ds = obj.descMetadata
+           # => (should be the XML document you added before)
+
+           ## UPDATE
+           # manipulating XML:
+           > ds.ng_xml.xpath('//my_xml_content') 
+
+           ## DELETE
+           > obj.delete
+
+      }, STATEMENT
+
+
+      rails_console unless $quick
     end
 
     def enhance_model_with_contrieved_descmd
+      say %Q{
+    Instead of working with the Nokogiri XML document directly, we can use OM to
+    make querying an XML document easier. We'll replace the previous Record with a
+    OM-enabled document.
+      }
       copy_file "basic_om_model.rb", "app/models/record.rb"
     end
 
+    def testing_the_contrieved_descmd
+      say %Q{
+    If you launch the Rails interactive console, we can now create and manipulate our object
+    using methods provided by OM.
+
+        > obj = Record.new
+        > obj.descMetadata.title = "My object title"
+        > obj.save
+        > obj.descMetadata.content
+        # => An XML document with the title "My object title"
+      }, STATEMENT
+
+      rails_console unless $quick
+    end
+
+    def use_the_delegate_method
+      say %Q{
+    We can use the #delegate method to tell the model-object how to access these attributes.
+
+        > obj = Record.new
+        > obj.title = "My object title"
+        > obj.save
+        > obj.descMetadata.content
+        # => An XML document with the title "My object title"
+      }
+      insert_into_file "app/models/record.rb", :after => %Q{has_metadata :name => "descMetadata", :type => DatastreamMetadata\n} do
+        "delegate :title, :to => 'descMetadata'\n"
+      end
+    end
+
     def add_mods_model_with_mods_descmd
+      say %Q{
+    We'll now replace the contrieved XML metadata schema with a simple
+    MODS-based example, using an OM terminology we prepared earlier.
+
+    We'll put the MODS datastream in a separate module and file, so that
+    it can be easily reused in other ActiveFedora-based objects.
+      }
+
       copy_file "basic_mods_model.rb", "app/models/record.rb"
+      copy_file "mods_desc_metadata.rb", "app/models/mods_desc_metadata.rb"
 
       say %Q{
-    And we have modeled how to make sense of the MODS XML datastream
-      }
-      copy_file "mods_desc_metadata.rb", "app/models/mods_desc_metadata.rb"
+    If you launch the Rails interactive console, we can now create and manipulate our object
+    using methods provided by OM.
+
+        > obj = Record.new
+        > obj.title = "My object title"
+        > obj.save
+        > obj.descMetadata.content
+        # => A MODS XML document
+      }, STATEMENT
+
+      rails_console unless $quick
     end
   end
 
   class WiringItIntoRails < Thor::Group
     include Thor::Actions
     include Rails::Generators::Actions
+    include TutorialActions
 
     def self.source_paths
       [File.join($base_templates_path, "wiring_it_into_rails")]
     end
     
     def record_generator
+      say %Q{ 
+    Now that we've set up our model and successfully added content into Fedora, now we want to
+    connect the model to a Rails web application.
+
+    We'll start by using the standard Rails generators to create a scaffold controller and views, 
+    which will give us a place to start working.
+      }, STATEMENT
+
       generate "scaffold_controller Record --no-helper --skip-test-framework"
       route "resources :records"
+
+      say %Q{
+    If you look in ./app/views/records, you can see a set of Rails ERB templates.
+
+    ./app/controlers/records_controller.rb contains the controller that ties the model to the views.
+      }, STATEMENT
+
+      continue_prompt unless $quick
     end
 
     def add_new_form
+
+      say %Q{
+   The scaffold just provided the basic outline for an application, so we need to provide the guts for the 
+   web form. Here's a simple one:
+      }, STATEMENT
+
       copy_file "_form.html.erb", "app/views/records/_form.html.erb"
+      copy_file "show.html.erb", "app/views/records/show.html.erb"
+    end
+
+    def check_it_out
+
+      say %Q{
+   If we start the Rails server, we should now be able to visit the records in the browser, create new records,
+   and edit existing records. Start by creating a new record:
+      }, STATEMENT
+
+      rails_server '/records/new'
     end
 
   end
@@ -304,34 +458,50 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   class AddBlacklightAndHydra < Thor::Group
     include Thor::Actions
     include Rails::Generators::Actions
+    include TutorialActions
 
-    def add_blacklight
+    def add_gems
+      say %Q{
+    Thus far, we've been using component parts of the Hydra framework, but now we'll add in the whole framework so
+    we can take advantage of common patterns that have emerged in the Hydra community, including search, gated discovery,
+    etc.
+
+    We'll add a few new gems:
+
+      - blacklight provides a discovery interface on top of the Solr index
+      - hydra-head provides a number of common Hydra patterns
+      - devise is a standard Ruby gem for providing user-related functions, like registration, sign-in, etc.
+
+      }, STATEMENT
       gem 'blacklight'
-    end
-
-    def add_hydra
       gem 'hydra-head'
-    end
-
-    def add_devise
       gem 'devise'
-    end
 
-    def bundle_install
       run 'bundle install'
     end
 
     def run_generators
+
+      say %Q{
+    These gems provide generators for adding basic views, styles, and override points into your application. We'll run these
+    generators now.
+      }, STATEMENT
       generate 'blacklight', '--devise'
       generate 'hydra:head', 'User'
     end
 
     def db_migrate
+      say %Q{
+    Blacklight uses a SQL database for keeping track of user bookmarks, searches, etc. We'll run the migrations next:
+      }, STATEMENT
       rake 'db:migrate'
       rake 'db:test:prepare'
     end
 
     def hydra_jetty_conf
+      say %Q{
+    Hydra provides some configuration for Solr and Fedora. Use them.
+      }, STATEMENT
       rake 'jetty:stop'
       rake 'hydra:jetty:config'
       rake 'jetty:start'
@@ -341,8 +511,15 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   class FixupForHydra < Thor::Group
     include Thor::Actions
     include Rails::Generators::Actions
+    include TutorialActions
 
-    def update_controller
+    def do_it
+
+      say %Q{
+    We need to make a couple changes to our controller and model to make them fully-compliant objects by 
+    teaching them about access rights.
+      }
+
       inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
         "  include Hydra::AssetsControllerHelper\n"
       end
@@ -350,9 +527,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       insert_into_file "app/controllers/records_controller.rb", :after => "@record = Record.new(params[:record])\n" do
         "    apply_depositor_metadata(@record)\n"
       end
-    end
 
-    def update_model
       inject_into_class "app/models/record.rb", "Record" do
         "
   include Hydra::ModelMixins::CommonMetadata
@@ -360,6 +535,21 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         "
       end
 
+    end
+
+    def look_at_it
+      say %Q{
+    Blacklight and Hydra-Head have added some new functionality to the application. We can now look at a search interface 
+    (provided by Blacklight) and use gated discovery over our repository. By default, objects are only visible to their
+    creator.
+
+    Create some new objects, and then check out the search catalog at:
+
+       http://localhost:3000/catalog
+
+      }, STATEMENT
+
+      rails_server('/records/new') unless $quick
     end
 
   end

@@ -25,5 +25,4 @@ class Record < ActiveFedora::Base
   end
 
   has_metadata :name => "descMetadata", :type => DatastreamMetadata
-
 end
