@@ -1,0 +1,31 @@
+<%= form_for(@record) do |f| -%>
+  <h2>Title</h2>
+  <div class="row">
+      <%= f.label :title, "Title" %>
+      <%= f.text_area :title, :value=>@record.title, :required => true %>
+  </div>
+
+  <h2>Abstract and keywords</h2>
+
+  <div class="row">
+    <%= f.label :abstract %>
+    <%= f.text_area :abstract, :value=>@record.abstract.first, :required=>true %>
+  </div>
+
+  <div class="row">
+    <%= label_tag("hydrus_item_keywords", "Keywords") %>
+    <%= text_field_tag("hydrus_item_keywords", @record.descMetadata.subject.topic.join(", ")) -%>
+    <div class="help">separate keywords with commas</div>
+  </div>
+
+  <h2>Citations</h2>
+  <div class="row">
+    <%= f.label :preferred_citation, "Preferred citation for this object", :class => "hidden-tablet" %>
+    <%= f.text_area :preferred_citation, :value=>@record.preferred_citation %>
+  </div>
+
+  <input type="submit" class="btn btn-small save-edits" name="save" id="save" />
+
+<% end %>
+
+
