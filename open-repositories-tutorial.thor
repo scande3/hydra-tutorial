@@ -74,8 +74,6 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     dir = $application_name.parameterize('_')
     $application_root = dir
 
-    raise dir.inspect
-
     say %Q{
     We'll generate a stub application #{$application_name} into the folder 
     #{$application_root}. But, first, lets check your Ruby environment.
