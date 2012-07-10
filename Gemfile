@@ -1,4 +1,2 @@
 source :rubygems
-
-gem 'thor'
-gem 'rails'
+gemspec
