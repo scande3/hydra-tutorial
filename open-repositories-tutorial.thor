@@ -13,6 +13,7 @@ $application_root = ''
 
 STATEMENT = Thor::Shell::Color::YELLOW
 QUESTION = Thor::Shell::Color::GREEN
+WAIT = Thor::Shell::Color::CYAN
 
 class HydraOpenRepositoriesTutorialApp < Thor::Group
   include Thor::Actions
@@ -22,15 +23,18 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     def continue_prompt
       ask %Q{
     HIT <ENTER> KEY TO CONTINUE
-      }, QUESTION 
+      }, WAIT
     end
 
     def rails_console
       say %Q{
     We'll launch the console again. Give some of those commands a try.
+      }, STATEMENT
+
+      say %Q{
 
     Hit Ctrl-D (^D) to stop the Rails console and continue this tutorial.
-      }, STATEMENT
+      }, WAIT
 
       run "rails c"
     end
@@ -40,9 +44,12 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     We'll start the Rails server for you. It should be available in your browser at:
 
        http://localhost:3000#{url}
+      }, STATEMENT
+
+      say %Q{
 
     Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.
-      }, STATEMENT
+      }, WAIT
 
       run "rails s"
     end
@@ -58,6 +65,11 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     Hydra application. We'll build the application gradually, starting by building
     our "business logic", wiring in HTML views, and then connecting it to our
     Rails application.
+
+    At several points in this tutorial, as we iteratively develop our files, you may
+    be prompted to review conflicts between versions of files. It is safe to blindly
+    accept the changes ('y'), however you may wish to view the diff ('d') to see the
+    things we're change.
     }, STATEMENT
 
     name = ask %Q{
@@ -118,6 +130,26 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   def cleanup
     inside $application_root do
       continue_prompt
+      Cleanup.start
+    end
+  end
+
+  class Cleanup < Thor::Group
+
+    include Thor::Actions
+    include Rails::Generators::Actions
+    include TutorialActions
+
+    def start_everything
+      say %Q{
+  This is the end of the tutorial. We'll give you a final chance to look at the web application.
+      }, STATEMENT
+      rake 'jetty:stop'
+      rake 'jetty:start'
+      rails_server
+    end
+
+    def stop_jetty
       rake 'jetty:stop'
     end
   end
@@ -197,7 +229,9 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       }, STATEMENT
 
 
-      rails_server unless $quick
+      inside $application_root do
+        rails_server unless $quick
+      end
     end
   end
 
@@ -316,6 +350,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
            ## CREATE
            > obj = Record.new
+           # => #<Record:1571331701243443635 @pid="__DO_NOT_USE__" >
            > obj.descMetadata.content = 'e.g. <my_xml_content />'
            > obj.save
 
@@ -325,6 +360,8 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
            ## RETRIEVE
            > obj = Record.find('changeme:1')
            > ds = obj.descMetadata
+           # => #<ActiveFedora::NokogiriDatastream:3283711306477137919 @pid="changeme:1" @dsid="descMetadata" @controlGroup="X" @dirty="false" @mimeType="text/xml" > 
+           > ds.content
            # => (should be the XML document you added before)
 
            ## UPDATE
@@ -373,7 +410,8 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         > obj.save
         > obj.descMetadata.content
         # => An XML document with the title "My object title"
-      }
+      }, STATEMENT
+
       insert_into_file "app/models/record.rb", :after => %Q{has_metadata :name => "descMetadata", :type => DatastreamMetadata\n} do
         "delegate :title, :to => 'descMetadata'\n"
       end
@@ -386,7 +424,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
     We'll put the MODS datastream in a separate module and file, so that
     it can be easily reused in other ActiveFedora-based objects.
-      }
+      }, STATEMENT
 
       copy_file "basic_mods_model.rb", "app/models/record.rb"
       copy_file "mods_desc_metadata.rb", "app/models/mods_desc_metadata.rb"
@@ -490,7 +528,9 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     These gems provide generators for adding basic views, styles, and override points into your application. We'll run these
     generators now.
       }, STATEMENT
+      run 'rm config/solr.yml' # avoid meaningless conflict
       generate 'blacklight', '--devise'
+      run 'rm config/solr.yml' # avoid meaningless conflict
       generate 'hydra:head', 'User'
     end
 
@@ -522,7 +562,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       say %Q{
     We need to make a couple changes to our controller and model to make them fully-compliant objects by 
     teaching them about access rights.
-      }
+      }, STATEMENT
 
       inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
         "  include Hydra::AssetsControllerHelper\n"
