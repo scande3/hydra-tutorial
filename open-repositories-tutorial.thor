@@ -64,12 +64,17 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     What do you want to call your application?
     }, QUESTION unless $quick
 
+    name = name.to_s.strip!
+
     name ||= 'hydra_tutorial_app'
 
-    dir = name.parameterize('_')
 
     $application_name = name
+
+    dir = $application_name.parameterize('_')
     $application_root = dir
+
+    raise dir.inspect
 
     say %Q{
     We'll generate a stub application #{$application_name} into the folder 
