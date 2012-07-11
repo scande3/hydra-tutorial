@@ -631,6 +631,15 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         "
       end
 
+      say %Q{
+    We'll also update our controller to provide access controls on records.
+      }
+
+      inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
+        "  include Hydra::AccessControlsEnforcement\n" +
+        "  before_filter :enforce_access_controls\n"
+      end
+
     end
 
     def look_at_it
