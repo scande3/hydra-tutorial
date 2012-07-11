@@ -244,10 +244,6 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       }, Thor::Shell::Color::YELLOW
       run "rails new #{$application_root}"
       run "cd #{$application_root}"
-      inside $application_root do
-        gem 'execjs'
-        gem 'therubyracer'
-      end
     end
 
     def out_of_the_box
@@ -285,6 +281,11 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
 
     def adding_dependencies
+      gem 'execjs'
+      gem 'therubyracer'
+    end
+
+    def add_fedora_and_solr_with_hydrajetty
 
       say %Q{
     Fedora runs as a Java servlet inside a container like Tomcat or Jetty.
