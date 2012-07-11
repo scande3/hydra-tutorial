@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "hydra-tutorial"
-  s.version = "0.0.5"
+  s.version = "0.0.6"
   s.platform = Gem::Platform::RUBY
   s.authors = ["Chris Beer"]
   s.email = ["hydra-tech@googlegroups.com"]
