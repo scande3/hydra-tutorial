@@ -57,9 +57,14 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
   include TutorialActions
   class_option :quick, :default => false
+  class_option :git, :default => false
+
+  def setup_parameters
+    $quick = options[:quick]
+    $git = options[:git]
+  end
 
   def welcome
-    $quick = options[:quick]
     say %Q{
     Welcome to this Hydra tutorial. We're going to step through building a working
     Hydra application. We'll build the application gradually, starting by building
@@ -137,6 +142,13 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   def add_tests
     inside $application_root do
       AddTests.start
+    end
+  end
+
+
+  def sprinkle_some_styling
+    inside $application_root do
+      SprinkeSomeStyling.start
     end
   end
 
@@ -527,8 +539,14 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       - devise is a standard Ruby gem for providing user-related functions, like registration, sign-in, etc.
 
       }, STATEMENT
-      gem 'blacklight'
-      gem 'hydra-head'
+
+      if $git
+        gem 'blacklight', :git => "git://github.com/projectblacklight/blacklight.git"
+        gem 'hydra-head', :git => "git://github.com/projecthydra/hydra-head.git"
+      else
+        gem 'blacklight'
+        gem 'hydra-head'
+      end
       gem 'devise'
 
       run 'bundle install'
@@ -644,11 +662,32 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
   end
 
-  class AddFileAssets
+  class AddFileAssets < Thor::Group
+    include Thor::Actions
+    include Rails::Generators::Actions
+    include TutorialActions
+
+    def self.source_paths
+      [File.join($base_templates_path, "add_tests")]
+    end
+
 
   end
 
-  class SprinkeSomeBootstrapCSS
+  class SprinkeSomeStyling < Thor::Group
+    include Thor::Actions
+    include Rails::Generators::Actions
+    include TutorialActions
+
+    def self.source_paths
+      [File.join($base_templates_path, "sprinkle_some_styling")]
+    end
+
+
+    def fix_add_assets_links
+      copy_file "_add_assets_links.html.erb", "app/views/_add_assets_links.html.erb"
+    end
+
 
   end
 
