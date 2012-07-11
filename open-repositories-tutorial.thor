@@ -102,7 +102,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     say %Q{
     We'll generate a stub application #{$application_name} into the folder 
     #{$application_root}. But, first, lets check your Ruby environment.
-    }
+    }, STATEMENT
 
   end
 
