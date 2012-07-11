@@ -76,6 +76,11 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     you may be prompted to review conflicts between versions of files. It is 
     safe to blindly accept the changes ('y'), however you may wish to view 
     the diff ('d') to see the things we're change.
+
+    This tutorial, a README file, and our bug tracker are at:
+        
+        https://github.com/projecthydra/hydra-tutorial
+
     }, STATEMENT
 
     name = ask %Q{
