@@ -681,7 +681,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     end
     
     def write_our_first_test
-      copy_file 'records_controller_spec.rb', 'spec/controlers/records_controller_spec.rb'
+      copy_file 'records_controller_spec.rb', 'spec/controllers/records_controller_spec.rb'
     end
 
     def run_tests
@@ -690,6 +690,39 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
     def a_model_test
    #   copy_file 'record_test.rb', 'spec/models/record_test.rb'
+    end
+
+    def run_tests_again
+      run 'rspec'
+    end
+
+    def install_capybara
+      gem_group :development, :test do
+        gem 'capybara'
+      end
+      run 'bundle install'
+     # inject_into_file 'spec/spec_helper.rb' do
+     #   "  require 'capybara/rails'\n"
+     # end
+    end
+
+    def an_integration_test
+      copy_file 'integration_spec.rb', 'spec/integration/integration_spec.rb'
+
+    end
+
+    def run_tests_x3
+      run 'rspec'
+    end
+
+    def add_jettywrapper_ci_task
+      copy_file 'ci.rake', 'lib/tasks/ci.rake'
+    end
+
+    def run_ci_task
+      rake 'jetty:stop'
+      rake 'ci'
+      rake 'jetty:start'
     end
 
   end
