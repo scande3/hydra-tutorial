@@ -151,6 +151,11 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     end
   end
 
+  def add_file_upload
+    inside $application_root do
+      AddFileUpload.start
+    end
+  end
 
   def sprinkle_some_styling
     inside $application_root do
@@ -737,18 +742,6 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
   end
 
-  class AddFileAssets < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-
-    def self.source_paths
-      [File.join($base_templates_path, "add_tests")]
-    end
-
-
-  end
-
   class SprinkeSomeStyling < Thor::Group
     include Thor::Actions
     include Rails::Generators::Actions
@@ -767,14 +760,52 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   end
 
   class AddCollections
+    def add_collection_model
 
+    end
+
+    def add_collection_controller
+
+    end
+
+    def add_collection_reference_to_record
+
+    end
   end
 
-  class AddRightsEnforcement
+  class AddFileUpload < Thor::Group
+    include Thor::Actions
+    include Rails::Generators::Actions
+    include TutorialActions
+    
+    def self.source_paths
+      [File.join($base_templates_path, "add_file_upload")]
+    end
 
+    def add_file_uploads
+      inject_into_class 'app/models/record.rb', 'Record' do
+        "has_file_datastream :name => 'content', :type => ActiveFedora::Datastream\n"
+      end
+    end
+    
+    def add_file_upload_controller
+      inject_into_class "app/controllers/records_controller.rb", "RecordsController" do
+        "    include Hydra::Controller::UploadBehavior\n"
+      end
+      insert_into_file "app/controllers/records_controller.rb", :after => "apply_depositor_metadata(@record)\n" do
+        "    add_posted_blob_to_asset(@record, params[:filedata]) if params.has_key?(:filedata)\n"
+      end
+    end
+
+    def add_file_upload_ui
+      copy_file "_form.html.erb", "app/views/records/_form.html.erb"
+    end
   end
 
   class AddTechnicalMetadata
+    def add_datastream_and_terminology
+
+    end
 
   end
 end

@@ -1,4 +1,7 @@
-<%= form_for(@record) do |f| -%>
+<%= form_for(@record, :html => { :multipart => true } ) do |f| -%>
+  <h2>File</h2>
+  <%= file_field_tag "filedata"  %>
+
   <h2>Title</h2>
   <div class="row">
       <%= f.label :title, "Title" %>
@@ -27,3 +30,7 @@
   <input type="submit" class="btn btn-small save-edits" name="save" id="save" />
 
 <% end %>
+
+
+
+
