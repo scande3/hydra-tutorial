@@ -731,14 +731,22 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
     def an_integration_test
       copy_file 'integration_spec.rb', 'spec/integration/integration_spec.rb'
-
     end
 
     def run_tests_x3
+      say %Q{
+      Now that the integration spec is in place, when we try to run rspec,
+      we'll get a test failure because it can't connect to Fedora.
+      }, STATEMENT
       run 'rspec'
     end
 
     def add_jettywrapper_ci_task
+      say %Q{
+      Instead, we need to add a new Rake task that knows how to wrap the 
+      test suite --  start jetty before running the tests and stop jetty
+      at the end. We can use a feature provided by jettywrapper to do this.
+      }
       copy_file 'ci.rake', 'lib/tasks/ci.rake'
     end
 
@@ -748,6 +756,44 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       rake 'jetty:start'
     end
 
+    def add_coverage_stats
+      say %Q{
+      Now that we have tests, we also want to have some coverage statistics.
+      }, STATEMENT
+
+      gem_group :development, :test do
+        gem 'simplecov'
+      end
+
+      run 'bundle install'
+
+      copy_file 'ci_with_coverage.rake', 'lib/tasks/ci.rake'
+      insert_into_file "spec/spec_helper.rb", :after => "ENV[\"RAILS_ENV\"] ||= 'test'\n"do
+        %Q{
+if ENV['COVERAGE'] == "true"
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter "config/"
+    add_filter "spec/"
+  end
+end
+        }
+      end
+    end
+
+    def run_ci_task_again
+      rake 'jetty:stop'
+      rake 'ci'
+      rake 'jetty:start'
+    end
+
+    def coverage_prompt
+      say %Q{
+      Go take a look at the coverage report, open the file ./coverage/index.html
+      in your browser.
+      }
+      continue_prompt
+    end
   end
 
   class SprinkeSomeStyling < Thor::Group
