@@ -646,6 +646,11 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         "
       end
 
+      insert_into_file "app/models/solr_document.rb", :after => "include Blacklight::Solr::Document\n" do
+        "
+  include Hydra::Solr::Document
+        "
+      end
       insert_into_file "app/assets/javascripts/application.js", :after => "//= require_tree .\n" do
         "Blacklight.do_search_context_behavior = function() { }\n"
       end
