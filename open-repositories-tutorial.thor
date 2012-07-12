@@ -646,6 +646,9 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         "
       end
 
+      insert_into_file "app/assets/javascripts/application.js", :after => "//= require_tree .\n" do
+        "Blacklight.do_search_context_behavior = function() { }\n"
+      end
       say %Q{
     We'll also update our controller to provide access controls on records.
       }
@@ -793,7 +796,8 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         "    include Hydra::Controller::UploadBehavior\n"
       end
       insert_into_file "app/controllers/records_controller.rb", :after => "apply_depositor_metadata(@record)\n" do
-        "    add_posted_blob_to_asset(@record, params[:filedata]) if params.has_key?(:filedata)\n"
+        "    @record.label = params[:record][:title] # this is a bad hack to work around an AF bug\n" +
+        "    add_posted_blob_to_asset(@record, params[:filedata]) if params.has_key?(:filedata)\n" 
       end
     end
 
