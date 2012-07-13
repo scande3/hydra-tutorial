@@ -581,7 +581,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         gem 'hydra-head', :git => "git://github.com/projecthydra/hydra-head.git"
       else
         gem 'blacklight'
-        gem 'hydra-head'
+        gem 'hydra-head', ">= 4.1.1"
       end
       gem 'devise'
 
