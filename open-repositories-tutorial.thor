@@ -432,7 +432,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     Instead of working with the Nokogiri XML document directly, we 
     can use OM to make querying an XML document easier. We'll replace the 
     previous Record with a OM-enabled document.
-      }
+      }, STATEMENT
       copy_file "basic_om_model.rb", "app/models/record.rb"
     end
 
