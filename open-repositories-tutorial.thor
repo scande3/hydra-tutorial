@@ -694,6 +694,11 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
 
     def install_rspec
+      say %Q{
+    One of the great things about the Rails framework is the strong
+    testing ethic. We'll use rspec to write a couple tests for 
+    this application.
+      }, STATEMENT
       gem_group :development, :test do
         gem 'rspec'
         gem 'rspec-rails'
@@ -704,22 +709,23 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     end
     
     def write_our_first_test
+      say %Q{
+    Here's a quick example of a test.
+      }
       copy_file 'records_controller_spec.rb', 'spec/controllers/records_controller_spec.rb'
-    end
-
-    def run_tests
       run 'rspec'
     end
 
     def a_model_test
    #   copy_file 'record_test.rb', 'spec/models/record_test.rb'
-    end
-
-    def run_tests_again
-      run 'rspec'
+      #run 'rspec'
     end
 
     def install_capybara
+      say %Q{ 
+    We also want to write integration tests to test the end-result that
+    a user may see. We'll add the capybara gem to do that.
+      }, STATEMENT
       gem_group :development, :test do
         gem 'capybara'
       end
@@ -730,6 +736,9 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     end
 
     def an_integration_test
+      say %Q{
+    Here's a quick integration test that proves deposit works.
+      }, STATEMENT
       copy_file 'integration_spec.rb', 'spec/integration/integration_spec.rb'
     end
 
@@ -746,11 +755,9 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       Instead, we need to add a new Rake task that knows how to wrap the 
       test suite --  start jetty before running the tests and stop jetty
       at the end. We can use a feature provided by jettywrapper to do this.
-      }
+      }, STATEMENT
       copy_file 'ci.rake', 'lib/tasks/ci.rake'
-    end
 
-    def run_ci_task
       rake 'jetty:stop'
       rake 'ci'
       rake 'jetty:start'
@@ -779,9 +786,7 @@ if ENV['COVERAGE'] == "true"
 end
         }
       end
-    end
 
-    def run_ci_task_again
       rake 'jetty:stop'
       rake 'ci'
       rake 'jetty:start'
@@ -791,7 +796,7 @@ end
       say %Q{
       Go take a look at the coverage report, open the file ./coverage/index.html
       in your browser.
-      }
+      }, STATEMENT
       continue_prompt
     end
   end
@@ -807,6 +812,10 @@ end
 
 
     def fix_add_assets_links
+      say %Q{ 
+    We'll add a little styling to the Hydra app and add a link to add a new 
+    Record in the header of the layout.
+      }, STATEMENT
       copy_file "_add_assets_links.html.erb", "app/views/_add_assets_links.html.erb"
     end
 
@@ -837,12 +846,20 @@ end
     end
 
     def add_file_uploads
+      say %Q{ 
+    Now that we have a basic Hydra application working with metadata-only, we
+    want to enhance that with the ability to upload files. Let's add a new 
+    datastream to our model.
+      }, STATEMENT
       inject_into_class 'app/models/record.rb', 'Record' do
         "has_file_datastream :name => 'content', :type => ActiveFedora::Datastream\n"
       end
     end
     
     def add_file_upload_controller
+      say %Q{
+    And educate our controller for managing file objects.
+      }, STATEMENT
       inject_into_class "app/controllers/records_controller.rb", "RecordsController" do
         "    include Hydra::Controller::UploadBehavior\n"
       end
@@ -853,6 +870,9 @@ end
     end
 
     def add_file_upload_ui
+      say %Q{
+    And add a file upload field on the form.
+      }, STATEMENT
       copy_file "_form.html.erb", "app/views/records/_form.html.erb"
     end
   end
