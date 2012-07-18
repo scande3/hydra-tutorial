@@ -209,7 +209,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     #{ruby_executable}
       }, STATEMENT
 
-      if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_Executable =~ /Users/
+      if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/
         say %Q{
     It looks like you're using rvm/rbenv/etc. (with a gemset?) We'll use 
     this environment to build the application.
