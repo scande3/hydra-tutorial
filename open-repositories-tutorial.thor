@@ -401,7 +401,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         ## CREATE
         > obj = Record.new
         # => #<Record:1571331701243443635 @pid="__DO_NOT_USE__" >
-        > obj.descMetadata.content = 'e.g. <my_xml_content />'
+        > obj.descMetadata.content = e.g. '<my_xml_content />'
         > obj.save
 
         > obj.pid  
