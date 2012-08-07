@@ -302,7 +302,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     We'll download a copy now. It may take awhile.
       }, STATEMENT
       unless File.exists? '../jetty'
-        git :clone => 'git://github.com/projecthydra/hydra-jetty.git ../jetty'
+        git :clone => '-b 4.x git://github.com/projecthydra/hydra-jetty.git ../jetty'
       end
       run 'cp -R ../jetty jetty'
 
