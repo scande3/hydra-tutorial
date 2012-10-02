@@ -47,6 +47,10 @@ $ gem install hydra-tutorial
 $ hydra-tutorial
 ```
 
+If the tutorial app bombs with the `execJs: 'Could not find a JavaScript runtime'` 
+error, you may need to install a Javascript runtime such as [node.js](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+
+
 ## Testing
 
 If you are playing with the tutorial source code and want to make a
