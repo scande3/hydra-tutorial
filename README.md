@@ -20,7 +20,7 @@ release, I'll try to wire in file uploads, collections, etc.
 ## Pre-requisites
  * ruby v 1.8.7 or higher
  * java 1.5 or higher (in order to run solr under a java servlet container)
- * [[RVM|https://rvm.beginrescueend.com/rvm/install/]] (recommended)
+ * [RVM](https://rvm.beginrescueend.com/rvm/install/) (recommended)
 
 ActiveFedora, Hydra, and Rails require some gems that compile binaries and
 rely on installed system libraries like libxml, libxslt, and sqlite.  If
@@ -48,7 +48,7 @@ $ hydra-tutorial
 ```
 
 If the tutorial app bombs with the `execJs: 'Could not find a JavaScript runtime'` 
-error, you may need to install a Javascript runtime such as [node.js](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+error, you may need to install a Javascript runtime such as [node.js](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager).
 
 
 ## Testing
