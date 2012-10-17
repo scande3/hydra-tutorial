@@ -1,0 +1,459 @@
+# Install a version of Ruby.
+
+# Install RVM.
+
+# Install Ruby 1.9.
+
+# Create a gemset
+rvm use --rvmrc --create 1.9.3@hydra_walkthrough
+
+# See current gems.
+gem list
+
+# Install bundler and Rails.
+gem install bundler rails
+
+# See the effect.
+gem list
+
+# Initialize a new Rails application.
+rails new hydra_walkthrough
+
+# Put the .rvmrc file in our project directory.
+mv .rvmrc hydra_walkthrough
+
+# Get a copy of the resources directory.
+...
+
+# Get a copy the hydra-jetty project.
+git clone git://github.com/projecthydra/hydra-jetty.git
+
+# Put a copy of it into our Rails project.
+cp -r hydra-jetty hydra_walkthrough/jetty
+
+# Check out the initial Rails app.
+cd hydra_walkthrough
+
+# Add to .gitignore
+jetty
+.rvmrc
+Gemfile.lock
+
+# Git.
+git init
+git add .
+git commit -m 'Initial commit'
+
+# Run the Rails server in a second terminal window.
+rails server
+open http://localhost:3000
+
+# Check before we add some gems.
+rake -T
+
+# Add some lines to Gemfile.
+# In the :assets block.
+gem 'execjs'
+gem 'therubyracer', :platforms => :ruby
+
+# In the :development block.
+gem 'jettywrapper'
+gem 'debugger'
+
+# Git.
+git add .
+git commit -m 'Added some gems: execjs, therubyracer, jettywrapper, debugger'
+
+# Set up SOLR and Fedora config files.
+cp ../resources/solr.yml   config
+cp ../resources/fedora.yml config
+
+# Git.
+git add -A
+git commit -m 'Created SOLR and Fedora config files'
+
+# Bundle.
+bundle install
+
+# Check after: note the jetty tasks.
+rake -T
+
+# Start the Jetty server that will run Fedora and SOLR.
+rake jetty:start
+
+# Check them out.
+open http://localhost:8983/fedora/
+open http://localhost:8983/solr/development/admin/
+
+# More Gemile.
+gem 'active-fedora'
+gem 'om'
+
+# Bundle.
+bundle install
+
+# Git.
+git add .
+git commit -m 'Added active-fedora and OM gems'
+
+# Create a basic model.
+cp ../resources/basic_af_model.rb app/models/record.rb
+
+# Git.
+git add -A
+git commit -m 'Created a basic Record model with a descMetadata datastream'
+
+# Check it out.
+rails console
+
+    ## CREATE
+    > obj = Record.new
+    > xml = '<xyz><foo>ABC</foo><foo>DEF</foo><bar>123</bar></xyz>'
+    > obj.descMetadata.content = xml
+    > obj.save
+
+    > pid = obj.pid
+
+    ## RETRIEVE
+    > obj = Record.find(pid)
+    > ds = obj.descMetadata
+    > puts ds.content
+
+    ## UPDATE
+    > doc = ds.ng_xml
+    > elements = doc.xpath '//foo'
+    > elements.each { |e| puts e }
+    > exit
+
+# Check it out in the browser.
+open http://localhost:8983/fedora/objects/
+  -> click search
+  -> click the hyperlink of the object's PID (eg, 'changeme:1')
+  -> click hyperlink to view the object's datastreams list
+  -> click hyperlink to view the content of the descMetadata datastream
+
+# Back in the Rails console:
+
+    rails console
+
+    ## DELETE
+    > obj = Record.find('changeme:1')
+    > obj.delete
+    > exit
+
+# Check it out in the browser.
+# And click search button.
+open http://localhost:8983/fedora/objects/
+
+# Enhance our datastream.
+cp ../resources/basic_om_model.rb app/models/record.rb
+
+# Git.
+git commit -am 'Added an OM terminology'
+
+# Check it out.
+rails console
+
+    > obj = Record.new
+    > obj.descMetadata.title = "My object title"
+    > obj.save
+    > puts obj.descMetadata.content
+    > obj.delete
+    > exit
+
+# Modify record.rb
+# Add this after the has_metadata call.
+
+  delegate :title, :to => 'descMetadata'
+
+# Git.
+git commit -am 'Added delegate() to the model'
+
+# Check it out.
+rails console
+
+    > obj = Record.new
+    > obj.title = "My object title"
+    > obj.save
+    > puts obj.descMetadata.content
+    > puts obj.title.inspect
+    > obj.delete
+    > exit
+
+# Use delegate_to().
+# Replace the delete() line.
+
+  delegate_to 'descMetadata', [:title, :author, :url, :description], :unique => true
+
+# Git.
+git commit -am 'Switched to delegate_to()'
+
+# Check it out.
+rails console
+
+    > obj = Record.new
+    > obj.title = "Some title"
+    > obj.title
+    > obj.author = 'Some author'
+    > obj.save
+    > puts obj.descMetadata.contnet
+    > puts obj.descMetadata.content
+    > obj.delete
+    > exit
+
+# Enhance our model.
+# This example is too complicated.
+# Also, it undoes the delegate_to().
+cp ../resources/basic_mods_model.rb   app/models/record.rb
+cp ../resources/mods_desc_metadata.rb app/models/mods_desc_metadata.rb
+
+# Git.
+git add -A
+git commit -m 'Added a more extensive OM example'
+
+# Check it out.
+rails console
+
+    > obj = Record.new
+    > obj.title = "My object title"
+    > obj.save
+    > puts obj.descMetadata.content
+    > obj.delete
+    > exit
+
+# Initialize a controller and views for our Record model.
+rails generate scaffold_controller Record --no-helper --skip-test-framework
+
+# Git.
+git add -A
+git commit -m 'Added a basic controller and views for the Record model'
+
+# Check files that were created.
+app/controlers/records_controller.rb
+app/views/records/
+
+# Modify config/routes.rb
+resources :records
+
+# Git.
+git commit -am 'Set up resourceful routing for the Record model'
+
+# Put some files in place.
+cp ../resources/_form.html.erb app/views/records/_form.html.erb
+cp ../resources/show.html.erb    app/views/records/show.html.erb
+
+# Git.
+git commit -am 'Fleshed out the edit form and show page'
+
+# Try it out.
+# Delete links are not working.
+# Keywords are not being saved.
+# The view has multiple problems and is not in synce with the model.
+open http://localhost:3000/records/new
+
+# More Gemile.
+gem 'blacklight'
+gem 'hydra-head'
+gem 'devise'
+
+# Git.
+git commit -am 'Added blacklight, hydra-head, and devise'
+
+# Bundle.
+bundle install
+
+# Remove some files.
+rm public/index.html
+rm config/solr.yml
+
+# Set up devise.
+rails generate blacklight --devise
+
+# Git.
+git add -A
+git commit -m 'Set up devise'
+
+# Remove some files.
+rm config/solr.yml
+rm app/controllers/catalog_controller.rb
+
+# Set up a User model for hydra-head.
+rails generate hydra:head User
+
+# Do some stuff.
+rake db:migrate
+rake db:test:prepare
+rake jetty:stop
+rake hydra:jetty:config
+rake jetty:start
+
+# Git.
+git add -A
+git commit -m 'Set up User model under hydra-head'
+
+# Various edits:
+
+    # app/controllers/records_controller.rb
+    include Hydra::AssetsControllerHelper
+    include Hydra::AccessControlsEnforcement
+    before_filter :enforce_access_controls
+
+    # app/controllers/records_controller.rb
+    # In create(), after @record is set.
+    apply_depositor_metadata(@record)
+
+    # app/models/record.rb
+    include Hydra::ModelMixins::CommonMetadata
+    include Hydra::ModelMethods
+
+    # app/models/solr_document.rb
+    # After other includes.
+    include Hydra::Solr::Document
+
+    # app/assets/javascripts/application.js
+    # At end of file.
+    Blacklight.do_search_context_behavior = function() { }
+
+# Git.
+git commit -am 'Included hydra-head into our model, controller, etc.'
+
+# Check it out.
+# Needed to edit hydra-head:  _user_util_links.html.erb
+open http://localhost:3000/records/new
+    -> Click sign up.
+    -> Enter any email and password.
+
+# Add some gems for testing.
+# In the :test group (and :development group?)
+gem 'rspec'
+gem 'rspec-rails'
+
+# Git.
+git commit -am 'Added rspec gem'
+
+# Bundle
+bundle install
+
+# Set up rspec.
+rails generate rspec:install
+
+# Git.
+git add -A
+git commit -m 'Initialized rspec directory'
+
+# Create a test.
+# This test should do something real.
+mkdir spec/controllers
+cp ../resources/records_controller_spec.rb spec/controllers/records_controller_spec.rb
+
+# Git.
+git add -A
+git commit -m 'Create a placeholder test'
+
+# Run the test
+rspec
+
+# Add some gems for testing.
+# In the :test group (and :development group?)
+gem 'capybara'
+
+# Bundle
+bundle install
+
+# Git.
+git commit -am 'Added capybara gem'
+
+# Create a test.
+mkdir spec/integration
+cp ../resources/integration_spec.rb spec/integration/integration_spec.rb
+
+# Git.
+git add -A
+git commit -m 'Created a few integration tests'
+
+# Run the tests
+rspec
+
+# Create a ci rake task.
+cp ../resources/ci.rake lib/tasks/ci.rake
+
+# Git.
+git add -A
+git commit -m 'Created a ci rake task'
+
+# Run it.
+rake jetty:stop
+rake ci
+rake jetty:start
+
+# Add a gem for test coverage.
+# In the :test group (and :development group?)
+gem 'simplecov'
+
+# Bundle
+bundle install
+
+# Git.
+git commit -am 'Added simplecov gem'
+
+# ci.rake
+# After Rails.env is set.
+ENV['COVERAGE'] ||= 'true'
+
+# spec/spec_helper.rb
+# After ENV['RAILS_ENV'] is set.
+if ENV['COVERAGE'] == "true"
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter "config/"
+    add_filter "spec/"
+  end
+end
+
+# Add to .gitignore
+coverage
+
+# Git
+git commit -am 'Set up test coverage'
+
+# Run it.
+rake jetty:stop
+rake ci
+rake jetty:start
+
+# Check test coverage
+open coverage/index.html
+
+# app/models/record.rb
+# After has_metadata
+has_file_datastream :name => 'content', :type => ActiveFedora::Datastream
+
+# app/controllers/records_controller.rb
+include Hydra::Controller::UploadBehavior
+
+# app/controllers/records_controller.rb
+# After: apply_depositor_metadata().
+@record.label = params[:record][:title] # this is a bad hack to work around an AF bug
+add_posted_blob_to_asset(@record, params[:filedata]) if params.has_key?(:filedata)
+
+# app/views/records/_form.html.erb
+# Delete first line. Use this instead:
+<%= form_for(@record, :html => { :multipart => true } ) do |f| -%>
+  <h2>File</h2>
+  <%= file_field_tag "filedata"  %>
+
+# Get stuff.
+cp ../resources/_add_assets_links.html.erb app/views/_add_assets_links.html.erb
+
+# Git.
+git add -A
+git commit -m 'Add some styling and link to new Record in the header of the layout'
+
+# Run the app.
+rake jetty:stop
+rake jetty:start
+rails server
+
+# Wrap up.
+Shut down rails server (CTRL-C)
+rake jetty:stop

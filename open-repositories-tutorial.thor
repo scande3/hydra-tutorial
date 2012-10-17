@@ -6,6 +6,8 @@ require 'thor/group'
 require 'rails/generators/actions'
 require 'active_support/core_ext/array/extract_options'
 require 'active_support/core_ext/string/inflections'
+require 'set'
+require 'fileutils'
 
 $base_templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'or_templates'))
 $application_name = ''
@@ -16,10 +18,26 @@ QUESTION = Thor::Shell::Color::GREEN
 WAIT = Thor::Shell::Color::CYAN
 
 class HydraOpenRepositoriesTutorialApp < Thor::Group
+
   include Thor::Actions
   include Rails::Generators::Actions
 
   module TutorialActions
+
+    def all_tasks
+      return %w(
+        welcome
+        install_ruby
+        install_bundler_and_rails
+        new_rails_app
+        out_of_the_box
+      )
+    end
+
+    def progress_file_name
+      return '.hydra-tutorial-progress'
+    end
+
     def continue_prompt
       ask %Q{
     HIT <ENTER> KEY TO CONTINUE
@@ -57,144 +75,103 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   end
 
   include TutorialActions
-  class_option :quick, :default => false
-  class_option :git, :default => false
 
-  def setup_parameters
+  class_option :quick, :default => false
+  class_option :git,   :default => false
+  class_option :reset, :default => false
+
+  argument(
+    :task_args, 
+    :type     => :array, 
+    :desc     => "Task name and its arguments",
+    :optional => true
+  )
+
+  def setup_options
     $quick = options[:quick]
-    $git = options[:git]
+    $git   = options[:git]
+    $reset = options[:reset]
   end
 
-  def welcome
-    say %Q{
-    Welcome to this Hydra tutorial. We're going to step through building a 
-    working Hydra application. We'll build the application gradually, starting 
-    by building our "business logic", wiring in HTML views, and then 
-    connecting it to our Rails application.
-
-    At several points in this tutorial, as we iteratively develop our files, 
-    you may be prompted to review conflicts between versions of files. It is 
-    safe to blindly accept the changes ('y'), however you may wish to view 
-    the diff ('d') to see the things we're change.
-
-    This tutorial, a README file, and our bug tracker are at:
-        
-        https://github.com/projecthydra/hydra-tutorial
-
-    }, STATEMENT
-
-    name = ask %Q{
-    What do you want to call your application?
-    }, QUESTION unless $quick
-
-    name = name.to_s.strip
-    name = 'hydra_tutorial_app' if name.empty?
-
-
-    $application_name = name
-
-    dir = $application_name.parameterize('_')
-    $application_root = dir
-
-    if File.exists? $application_root
-      say %Q{
-    #{$application_root} already exists. Either remove it or provide 
-    a different application name.
-      }, Thor::Shell::Color::RED
+  def main
+    pfn = progress_file_name()
+    if $reset
+      FileUtils.rm_f(pfn)
       exit
     end
+    FileUtils.touch(pfn) unless File.file?(pfn)
 
-    say %Q{
-    We'll generate a stub application #{$application_name} into the folder 
-    #{$application_root}. But, first, lets check your Ruby environment.
-    }, STATEMENT
+    done = Set.new(File.read(pfn).split("\n"))
 
-  end
-
-  def prerequisites
-    Prerequisites.start
-  end
-
-  def building_a_basic_rails_app
-    inside $application_root do
-      BuildingABasicRailsApp.start
+    if task_args and task_args.size > 0
+      task = task_args.shift
+    else
+      task = all_tasks.reject { |t| done.include?(t) }.first
     end
-  end
-  
-  def adding_our_models
-    inside $application_root do
-      AddingOurModels.start
+
+    if task
+      Tutorial.new.send(task, *task_args)
+      done << task
+      File.open(pfn, "w") { |f| f.puts(done.to_a.join "\n") }
+    else
+      puts "All tasks have been completed. Use --reset."
     end
   end
 
-  def wiring_it_into_rails 
-    inside $application_root do
-      WiringItIntoRails.start
-    end
-  end
-
-  def add_blacklight_and_hydra
-    inside $application_root do
-      AddBlacklightAndHydra.start
-    end
-  end
-
-  def fixup_for_hydra
-    inside $application_root do
-      FixupForHydra.start
-    end
-  end
-
-  def add_tests
-    inside $application_root do
-      AddTests.start
-    end
-  end
-
-  def add_file_upload
-    inside $application_root do
-      AddFileUpload.start
-    end
-  end
-
-  def sprinkle_some_styling
-    inside $application_root do
-      SprinkeSomeStyling.start
-    end
-  end
-
-  def cleanup
-    inside $application_root do
-      Cleanup.start
-    end
-  end
-
-  class Cleanup < Thor::Group
+  class Tutorial < Thor
 
     include Thor::Actions
     include Rails::Generators::Actions
     include TutorialActions
 
-    def start_everything
+    desc('welcome: FIX', 'FIX')
+    def welcome
       say %Q{
-    This is the end of the tutorial. We'll give you a final chance to look 
-    at the web application.
+      Welcome to this Hydra tutorial. We're going to step through building a 
+      working Hydra application. We'll build the application gradually, starting 
+      by building our "business logic", wiring in HTML views, and then 
+      connecting it to our Rails application.
+
+      At several points in this tutorial, as we iteratively develop our files, 
+      you may be prompted to review conflicts between versions of files. It is 
+      safe to blindly accept the changes ('y'), however you may wish to view 
+      the diff ('d') to see the things we're change.
+
+      This tutorial, a README file, and our bug tracker are at:
+          
+          https://github.com/projecthydra/hydra-tutorial
+
       }, STATEMENT
-      rake 'jetty:stop'
-      rake 'jetty:start'
-      rails_server
+
+      name = ask %Q{
+      What do you want to call your application?
+      }, QUESTION unless $quick
+
+      name = name.to_s.strip
+      name = 'hydra_tutorial_app' if name.empty?
+
+
+      $application_name = name
+
+      dir = $application_name.parameterize('_')
+      $application_root = dir
+
+      if File.exists? $application_root
+        say %Q{
+      #{$application_root} already exists. Either remove it or provide 
+      a different application name.
+        }, Thor::Shell::Color::RED
+        exit
+      end
+
+      say %Q{
+      We'll generate a stub application #{$application_name} into the folder 
+      #{$application_root}. But, first, lets check your Ruby environment.
+      }, STATEMENT
+
     end
 
-    def stop_jetty
-      rake 'jetty:stop'
-    end
-  end
-
-  class Prerequisites < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-
+    desc('install_ruby: FIX', 'FIX')
     def install_ruby
       return if $quick
       say %Q{ 
@@ -235,6 +212,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
     end
 
+    desc('install_bundler_and_rails: FIX', 'FIX')
     def install_bundler_and_rails
       say %Q{
     We're going to install some prerequisite gems in order to create our 
@@ -243,6 +221,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       run 'gem install bundler rails'
     end
 
+    desc('new_rails_app: FIX', 'FIX')
     def new_rails_app
       say %Q{
     Now we'll create the application.
@@ -251,6 +230,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       run "cd #{$application_root}"
     end
 
+    desc('out_of_the_box: FIX', 'FIX')
     def out_of_the_box
       return if $quick
       say %Q{
@@ -273,17 +253,79 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         rails_server unless $quick
       end
     end
+
+    ###HERE
+
+    desc('building_a_basic_rails_app: FIX', 'FIX')
+    def building_a_basic_rails_app
+      inside $application_root do
+        BuildingABasicRailsApp.start
+      end
+    end
+    
+    desc('adding_our_models: FIX', 'FIX')
+    def adding_our_models
+      inside $application_root do
+        AddingOurModels.start
+      end
+    end
+
+    desc('wiring_it_into_rails: FIX', 'FIX')
+    def wiring_it_into_rails 
+      inside $application_root do
+        WiringItIntoRails.start
+      end
+    end
+
+    desc('add_blacklight_and_hydra: FIX', 'FIX')
+    def add_blacklight_and_hydra
+      inside $application_root do
+        AddBlacklightAndHydra.start
+      end
+    end
+
+    desc('fixup_for_hydra: FIX', 'FIX')
+    def fixup_for_hydra
+      inside $application_root do
+        FixupForHydra.start
+      end
+    end
+
+    desc('add_tests: FIX', 'FIX')
+    def add_tests
+      inside $application_root do
+        AddTests.start
+      end
+    end
+
+    desc('add_file_upload: FIX', 'FIX')
+    def add_file_upload
+      inside $application_root do
+        AddFileUpload.start
+      end
+    end
+
+    desc('sprinkle_some_styling: FIX', 'FIX')
+    def sprinkle_some_styling
+      inside $application_root do
+        SprinkeSomeStyling.start
+      end
+    end
+
+    desc('cleanup: FIX', 'FIX')
+    def cleanup
+      inside $application_root do
+        Cleanup.start
+      end
+    end
+
   end
 
   class BuildingABasicRailsApp < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
 
     def self.source_paths
       [File.join($base_templates_path, "building_a_basic_rails_app")]
     end
-
 
     def adding_dependencies
       gem 'execjs'
@@ -881,8 +923,29 @@ end
     def add_datastream_and_terminology
 
     end
-
   end
+
+  class Cleanup < Thor::Group
+
+    include Thor::Actions
+    include Rails::Generators::Actions
+    include TutorialActions
+
+    def start_everything
+      say %Q{
+    This is the end of the tutorial. We'll give you a final chance to look 
+    at the web application.
+      }, STATEMENT
+      rake 'jetty:stop'
+      rake 'jetty:start'
+      rails_server
+    end
+
+    def stop_jetty
+      rake 'jetty:stop'
+    end
+  end
+
 end
 
 HydraOpenRepositoriesTutorialApp.start

@@ -3,3 +3,4 @@ jetty
 pkg
 Gemfile.lock
 .rvmrc
+.hydra-tutorial-progress
