@@ -10,8 +10,6 @@ require 'set'
 require 'fileutils'
 
 $base_templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'or_templates'))
-$application_name = ''
-$application_root = ''
 
 STATEMENT = Thor::Shell::Color::YELLOW
 QUESTION = Thor::Shell::Color::GREEN
@@ -79,6 +77,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   class_option :quick, :default => false
   class_option :git,   :default => false
   class_option :reset, :default => false
+  class_option :app,   :type => :string, :default => 'hydra_tutorial_app'
 
   argument(
     :task_args, 
@@ -88,9 +87,11 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   )
 
   def setup_options
-    $quick = options[:quick]
-    $git   = options[:git]
-    $reset = options[:reset]
+    $quick    = options[:quick]
+    $git      = options[:git]
+    $reset    = options[:reset]
+    $app_root = options[:app].strip.parameterize('_')
+
   end
 
   def main
@@ -143,30 +144,9 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
       }, STATEMENT
 
-      name = ask %Q{
-      What do you want to call your application?
-      }, QUESTION unless $quick
-
-      name = name.to_s.strip
-      name = 'hydra_tutorial_app' if name.empty?
-
-
-      $application_name = name
-
-      dir = $application_name.parameterize('_')
-      $application_root = dir
-
-      if File.exists? $application_root
-        say %Q{
-      #{$application_root} already exists. Either remove it or provide 
-      a different application name.
-        }, Thor::Shell::Color::RED
-        exit
-      end
-
       say %Q{
-      We'll generate a stub application #{$application_name} into the folder 
-      #{$application_root}. But, first, lets check your Ruby environment.
+      We'll generate a stub application in the #{$app_root} 
+      folder. But, first, lets check your Ruby environment.
       }, STATEMENT
 
     end
@@ -226,8 +206,16 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       say %Q{
     Now we'll create the application.
       }, Thor::Shell::Color::YELLOW
-      run "rails new #{$application_root}"
-      run "cd #{$application_root}"
+
+      if File.exists? $app_root
+        say %Q{
+      #{$app_root} already exists. Either remove it or provide 
+      a different application name using the --app option.
+        }, Thor::Shell::Color::RED
+        exit
+      end
+
+      run "rails new #{$app_root}"
     end
 
     desc('out_of_the_box: FIX', 'FIX')
@@ -248,8 +236,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     running in the browser and you can see if everything is working.
       }, STATEMENT
 
-
-      inside $application_root do
+      inside $app_root do
         rails_server unless $quick
       end
     end
@@ -258,63 +245,63 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
     desc('building_a_basic_rails_app: FIX', 'FIX')
     def building_a_basic_rails_app
-      inside $application_root do
+      inside $app_root do
         BuildingABasicRailsApp.start
       end
     end
     
     desc('adding_our_models: FIX', 'FIX')
     def adding_our_models
-      inside $application_root do
+      inside $app_root do
         AddingOurModels.start
       end
     end
 
     desc('wiring_it_into_rails: FIX', 'FIX')
     def wiring_it_into_rails 
-      inside $application_root do
+      inside $app_root do
         WiringItIntoRails.start
       end
     end
 
     desc('add_blacklight_and_hydra: FIX', 'FIX')
     def add_blacklight_and_hydra
-      inside $application_root do
+      inside $app_root do
         AddBlacklightAndHydra.start
       end
     end
 
     desc('fixup_for_hydra: FIX', 'FIX')
     def fixup_for_hydra
-      inside $application_root do
+      inside $app_root do
         FixupForHydra.start
       end
     end
 
     desc('add_tests: FIX', 'FIX')
     def add_tests
-      inside $application_root do
+      inside $app_root do
         AddTests.start
       end
     end
 
     desc('add_file_upload: FIX', 'FIX')
     def add_file_upload
-      inside $application_root do
+      inside $app_root do
         AddFileUpload.start
       end
     end
 
     desc('sprinkle_some_styling: FIX', 'FIX')
     def sprinkle_some_styling
-      inside $application_root do
+      inside $app_root do
         SprinkeSomeStyling.start
       end
     end
 
     desc('cleanup: FIX', 'FIX')
     def cleanup
-      inside $application_root do
+      inside $app_root do
         Cleanup.start
       end
     end
