@@ -29,6 +29,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         install_ruby
         install_bundler_and_rails
         new_rails_app
+        git_initial_commit
         out_of_the_box
       )
     end
@@ -37,7 +38,18 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       return '.hydra-tutorial-progress'
     end
 
+    def run_git_commands(cmds, msg = 'COMMIT_MSG')
+      inside $app_root do
+        cmds.each do |cmd|
+          cmd += " '#{msg}'" if cmd =~ /^commit/
+          run "git #{cmd}", :capture => true
+        end
+      end
+    end
+
     def continue_prompt
+      return if $quick
+      return unless $run_all
       ask %Q{
     HIT <ENTER> KEY TO CONTINUE
       }, WAIT
@@ -65,7 +77,6 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       }, STATEMENT
 
       say %Q{
-
     Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.
       }, WAIT
 
@@ -76,6 +87,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   include TutorialActions
 
   class_option :quick
+  class_option :all
   class_option :git
   class_option :reset
   class_option :debug_steps
@@ -90,6 +102,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
   def main
     $quick       = options[:quick]
+    $run_all     = options[:all]
     $git         = options[:git]
     $reset       = options[:reset]
     $app_root    = options[:app]
@@ -105,17 +118,26 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     h = YAML.load_file(pfn) || {}
     h[:app_root] = ($app_root || h[:app_root] || 'hydra_tutorial_app').strip.parameterize('_')
     h[:done]   ||= []
+    $app_root = h[:app_root]
 
     if task_args and task_args.size > 0
-      task = task_args.shift
+      tasks = task_args.dup
     else
-      task = all_tasks.reject { |t| h[:done].include?(t) }.first
+      tasks = all_tasks.reject { |t| h[:done].include?(t) }
+      tasks = [tasks.first] unless $run_all
+      tasks = [] if tasks == [nil]
     end
 
-    if task
-      Tutorial.new.send(task, *task_args) unless $debug_steps
-      h[:done] << task
-      File.open(pfn, "w") { |f| f.puts(h.to_yaml) }
+    if tasks.size > 0
+      tasks.each do |t|
+        if $debug_steps
+          puts "Running: task=#{t.inspect}"
+        else
+          Tutorial.new.send(t)
+        end
+        h[:done] << t
+        File.open(pfn, "w") { |f| f.puts(h.to_yaml) }
+      end
     else
       puts "All tasks have been completed. Use --reset."
     end
@@ -150,13 +172,9 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
           
           https://github.com/projecthydra/hydra-tutorial
 
-      }, STATEMENT
-
-      say %Q{
       We'll generate a stub application in the #{$app_root} 
-      folder. But, first, lets check your Ruby environment.
+      folder. You can change that using the --app option.
       }, STATEMENT
-
     end
 
     desc('install_ruby: FIX', 'FIX')
@@ -167,16 +185,18 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       }, STATEMENT
 
 
-      ruby_executable = run 'which ruby', :capture => true
+      ruby_executable = run 'which ruby', :capture => true, :verbose => false
+      ruby_executable.strip!
 
       say %Q{
     You are running this using:
-    #{ruby_executable}
+
+        #{ruby_executable}
       }, STATEMENT
 
       if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/
         say %Q{
-    It looks like you're using rvm/rbenv/etc. (with a gemset?) We'll use 
+    It looks like you're using rvm/rbenv/etc. We'll use 
     this environment to build the application.
       }, STATEMENT
 
@@ -194,7 +214,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     [2] https://github.com/sstephenson/rbenv/
       }, Thor::Shell::Color::RED
 
-      continue_prompt unless $quick
+      continue_prompt
 
       end
 
@@ -206,7 +226,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     We're going to install some prerequisite gems in order to create our 
     skeleton Rails application.
       }, STATEMENT
-      run 'gem install bundler rails'
+      run 'gem install bundler rails', :capture => true
     end
 
     desc('new_rails_app: FIX', 'FIX')
@@ -223,7 +243,19 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
         exit
       end
 
-      run "rails new #{$app_root}"
+      run "rails new #{$app_root}", :capture => true
+    end
+
+    desc('git_initial_commit: FIX', 'FIX')
+    def git_initial_commit
+      say %Q{
+    We will keep track of our work using Git so that you can see how
+    the files in the project change from one step to the next.
+
+    First, we'll initialize our project's Git repository.}, STATEMENT
+
+      cmds = ["init", "add .", "commit -m"]
+      run_git_commands(cmds, 'Initial commit')
     end
 
     desc('out_of_the_box: FIX', 'FIX')
@@ -377,7 +409,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       http://localhost:8983/solr/development/admin/
       }, STATEMENT
 
-      continue_prompt unless $quick
+      continue_prompt
 
     end
 
@@ -562,7 +594,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     that ties the model to the views.
       }, STATEMENT
 
-      continue_prompt unless $quick
+      continue_prompt
     end
 
     def add_new_form
