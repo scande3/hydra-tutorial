@@ -17,22 +17,61 @@ WARNING   = Thor::Shell::Color::RED
 module HydraTutorialHelpers
 
   def all_tasks
-    return %w(
-      welcome
-      install_ruby
-      install_bundler_and_rails
-      new_rails_app
-      git_initial_commit
-      out_of_the_box
-    )
+    return [
+      { :inside => false, :task => 'welcome' },
+      { :inside => false, :task => 'install_ruby' },
+      { :inside => false, :task => 'install_bundler_and_rails' },
+      { :inside => false, :task => 'new_rails_app' },
+      { :inside => true,  :task => 'git_initial_commit' },
+      { :inside => true,  :task => 'out_of_the_box' },
+    ]
+    to_do = [
+      { :inside => true,  :task => 'adding_dependencies' },
+      { :inside => true,  :task => 'add_fedora_and_solr_with_hydrajetty' },
+      { :inside => true,  :task => 'jetty_configuration ' },
+      { :inside => true,  :task => 'remove_public_index' },
+      { :inside => true,  :task => 'add_activefedora' },
+      { :inside => true,  :task => 'add_initial_model' },
+      { :inside => true,  :task => 'rails_console_tour' },
+      { :inside => true,  :task => 'enhance_model_with_contrieved_descmd' },
+      { :inside => true,  :task => 'testing_the_contrieved_descmd' },
+      { :inside => true,  :task => 'use_the_delegate_method' },
+      { :inside => true,  :task => 'add_mods_model_with_mods_descmd' },
+      { :inside => true,  :task => 'record_generator' },
+      { :inside => true,  :task => 'add_new_form' },
+      { :inside => true,  :task => 'check_it_out' },
+      { :inside => true,  :task => 'add_gems' },
+      { :inside => true,  :task => 'run_generators' },
+      { :inside => true,  :task => 'db_migrate' },
+      { :inside => true,  :task => 'hydra_jetty_conf' },
+      { :inside => true,  :task => 'do_it' },
+      { :inside => true,  :task => 'look_at_it' },
+      { :inside => true,  :task => 'install_rspec' },
+      { :inside => true,  :task => 'write_our_first_test' },
+      { :inside => true,  :task => 'a_model_test' },
+      { :inside => true,  :task => 'install_capybara' },
+      { :inside => true,  :task => 'an_integration_test' },
+      { :inside => true,  :task => 'run_tests_x3' },
+      { :inside => true,  :task => 'add_jettywrapper_ci_task' },
+      { :inside => true,  :task => 'add_coverage_stats' },
+      { :inside => true,  :task => 'coverage_prompt' },
+      { :inside => true,  :task => 'add_file_uploads' },
+      { :inside => true,  :task => 'add_file_upload_controller' },
+      { :inside => true,  :task => 'add_file_upload_ui' },
+      { :inside => true,  :task => 'fix_add_assets_links' },
+      { :inside => true,  :task => 'add_collection_model' },
+      { :inside => true,  :task => 'add_collection_controller' },
+      { :inside => true,  :task => 'add_collection_reference_to_record' },
+      { :inside => true,  :task => 'add_datastream_and_terminology' },
+      { :inside => true,  :task => 'start_everything' },
+      { :inside => true,  :task => 'stop_jetty' },
+    ]
   end
 
   def run_git_commands(cmds, msg = 'COMMIT_MSG')
-    inside $app_root do
-      cmds.each do |cmd|
-        cmd += " '#{msg}'" if cmd =~ /^commit/
-        run "git #{cmd}", :capture => true
-      end
+    cmds.each do |cmd|
+      cmd += " '#{msg}'" if cmd =~ /^commit/
+      run "git #{cmd}", :capture => true
     end
   end
 
@@ -93,6 +132,7 @@ class HydraTutorial < Thor
     :debug_steps => :boolean,
     :app         => :string,
   )
+
   def main(*tasks)
     $templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
     $quick          = options[:quick]
@@ -116,19 +156,30 @@ class HydraTutorial < Thor
     $app_root = h[:app_root]
 
     if tasks.size == 0
-      tasks = all_tasks.reject { |t| h[:done].include?(t) }
-      tasks = [tasks.first] unless $run_all
-      tasks = [] if tasks == [nil]
+      tasks = all_tasks.reject { |t| h[:done].include?(t[:task]) }
+      tasks = [tasks.first] unless ($run_all or tasks == [])
+    else
+      tasks = tasks.map { |user_task| 
+        matched_task = all_tasks.find { |t| user_task == t[:task] }
+        abort "Invalid task name: #{user_task}." unless matched_task
+        matched_task
+      }
     end
 
     if tasks.size > 0
       tasks.each do |t|
         if $debug_steps
-          puts "Running: task=#{t.inspect}"
+          puts "Running: task=#{t[:task].inspect}"
         else
-          invoke(t, [])
+          if t[:inside]
+            inside $app_root do
+              invoke(t[:task], [], {})
+            end
+          else
+            invoke(t[:task], [], {})
+          end
         end
-        h[:done] << t
+        h[:done] << t[:task]
         File.open(pf, "w") { |f| f.puts(h.to_yaml) }
       end
     else
@@ -263,9 +314,7 @@ class HydraTutorial < Thor
   running in the browser and you can see if everything is working.
     }, STATEMENT
 
-    inside $app_root do
-      rails_server unless $quick
-    end
+    rails_server unless $quick
   end
 
   desc('adding_dependencies: FIX', 'FIX')
