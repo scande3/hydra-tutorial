@@ -16,6 +16,8 @@ WARNING   = Thor::Shell::Color::RED
 
 module HydraTutorialHelpers
 
+  @@conf = nil
+
   def all_tasks
     return [
       [ false, 'welcome' ],
@@ -76,8 +78,8 @@ module HydraTutorialHelpers
   end
 
   def continue_prompt
-    return if $quick
-    return unless $run_all
+    return if @@conf.quick
+    return unless @@conf.run_all
     ask %Q{
   HIT <ENTER> KEY TO CONTINUE
     }, WAIT
@@ -119,9 +121,16 @@ class HydraTutorial < Thor
   include Rails::Generators::Actions
   include HydraTutorialHelpers
 
-  def self.source_paths
-    [$templates_path]
-  end
+  HTConf = Struct.new(
+    :templates_path,
+    :quick,
+    :run_all,
+    :git,
+    :reset,
+    :app_root,
+    :debug_steps,
+    :progress_file
+  )
 
   desc('main: FIX', 'FIX')
   method_options(
@@ -133,31 +142,36 @@ class HydraTutorial < Thor
     :app         => :string,
   )
 
+  def self.source_paths
+    [@@conf.templates_path]
+  end
+
   def main(*tasks)
-    $templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
-    $quick          = options[:quick]
-    $run_all        = options[:all]
-    $git            = options[:git]
-    $reset          = options[:reset]
-    $app_root       = options[:app]
-    $debug_steps    = options[:debug_steps]
-    $progress_file  = '.hydra-tutorial-progress'
+    @@conf                = HTConf.new
+    @@conf.templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
+    @@conf.quick          = options[:quick]
+    @@conf.run_all        = options[:all]
+    @@conf.git            = options[:git]
+    @@conf.reset          = options[:reset]
+    @@conf.app_root       = options[:app]
+    @@conf.debug_steps    = options[:debug_steps]
+    @@conf.progress_file  = '.hydra-tutorial-progress'
 
-    pf = $progress_file
+    pf = @@conf.progress_file
 
-    if $reset or not(File.file?(pf))
+    if @@conf.reset or not(File.file?(pf))
       File.open(pf, "w") { |f| f.puts("---\n") }
       exit
     end
 
     h = YAML.load_file(pf) || {}
-    h[:app_root] = ($app_root || h[:app_root] || 'hydra_tutorial_app').strip.parameterize('_')
+    h[:app_root] = (@@conf.app_root || h[:app_root] || 'hydra_tutorial_app').strip.parameterize('_')
     h[:done]   ||= []
-    $app_root = h[:app_root]
+    @@conf.app_root = h[:app_root]
 
     if tasks.size == 0
       tasks = all_tasks.reject { |i, t| h[:done].include?(t) }
-      tasks = [tasks.first] unless ($run_all or tasks == [])
+      tasks = [tasks.first] unless (@@conf.run_all or tasks == [])
     else
       tasks = tasks.map { |user_task| 
         matched_task = all_tasks.find { |i, t| user_task == t }
@@ -168,11 +182,11 @@ class HydraTutorial < Thor
 
     if tasks.size > 0
       tasks.each do |i, t|
-        if $debug_steps
+        if @@conf.debug_steps
           puts "Running: task=#{t.inspect}"
         else
           if i
-            inside($app_root) { invoke(t, [], {}) }
+            inside(@@conf.app_root) { invoke(t, [], {}) }
           else
             invoke(t, [], {})
           end
@@ -184,7 +198,7 @@ class HydraTutorial < Thor
       puts "All tasks have been completed. Use --reset."
     end
 
-    if $debug_steps
+    if @@conf.debug_steps
       run "cat #{pf}", :verbose => false
       exit
     end
@@ -208,14 +222,14 @@ class HydraTutorial < Thor
         
         https://github.com/projecthydra/hydra-tutorial
 
-    We'll generate a stub application in the #{$app_root} 
+    We'll generate a stub application in the #{@@conf.app_root} 
     folder. You can change that using the --app option.
     }, STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
   def install_ruby
-    return if $quick
+    return if @@conf.quick
     say %Q{ 
   Obviously, if you can run this tutorial, you have already installed ruby.
     }, STATEMENT
@@ -271,15 +285,15 @@ class HydraTutorial < Thor
   Now we'll create the application.
     }, Thor::Shell::Color::YELLOW
 
-    if File.exists? $app_root
+    if File.exists? @@conf.app_root
       say %Q{
-    #{$app_root} already exists. Either remove it or provide 
+    #{@@conf.app_root} already exists. Either remove it or provide 
     a different application name using the --app option.
       }, WARNING
       exit
     end
 
-    run "rails new #{$app_root}", :capture => true
+    run "rails new #{@@conf.app_root}", :capture => true
   end
 
   desc('git_initial_commit: FIX', 'FIX')
@@ -296,7 +310,7 @@ class HydraTutorial < Thor
 
   desc('out_of_the_box: FIX', 'FIX')
   def out_of_the_box
-    return if $quick
+    return if @@conf.quick
     say %Q{
   Here's a chance to look around. You can see the structure of 
   a Rails application. In particular, look at:
@@ -312,7 +326,7 @@ class HydraTutorial < Thor
   running in the browser and you can see if everything is working.
     }, STATEMENT
 
-    rails_server unless $quick
+    rails_server unless @@conf.quick
   end
 
   desc('adding_dependencies: FIX', 'FIX')
@@ -450,7 +464,7 @@ class HydraTutorial < Thor
     }, STATEMENT
 
 
-    rails_console unless $quick
+    rails_console unless @@conf.quick
   end
 
   desc('enhance_model_with_contrieved_descmd: FIX', 'FIX')
@@ -476,7 +490,7 @@ class HydraTutorial < Thor
       # => An XML document with the title "My object title"
     }, STATEMENT
 
-    rails_console unless $quick
+    rails_console unless @@conf.quick
   end
 
   desc('use_the_delegate_method: FIX', 'FIX')
@@ -521,7 +535,7 @@ class HydraTutorial < Thor
       # => A MODS XML document
     }, STATEMENT
 
-    rails_console unless $quick
+    rails_console unless @@conf.quick
   end
 
   desc('record_generator: FIX', 'FIX')
@@ -571,7 +585,7 @@ class HydraTutorial < Thor
  Start by creating a new record:
     }, STATEMENT
 
-    rails_server '/records/new' unless $quick
+    rails_server '/records/new' unless @@conf.quick
   end
 
 
@@ -594,7 +608,7 @@ class HydraTutorial < Thor
 
     }, STATEMENT
 
-    if $git
+    if @@conf.git
       gem 'blacklight', :git => "git://github.com/projectblacklight/blacklight.git"
       gem 'hydra-head', :git => "git://github.com/projecthydra/hydra-head.git"
     else
@@ -695,7 +709,7 @@ include Hydra::Solr::Document
 
     }, STATEMENT
 
-    rails_server('/records/new') unless $quick
+    rails_server('/records/new') unless @@conf.quick
   end
 
   desc('install_rspec: FIX', 'FIX')
