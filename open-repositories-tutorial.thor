@@ -8,6 +8,7 @@ require 'active_support/core_ext/array/extract_options'
 require 'active_support/core_ext/string/inflections'
 require 'set'
 require 'fileutils'
+require 'yaml'
 
 $base_templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'or_templates'))
 
@@ -74,10 +75,11 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
   include TutorialActions
 
-  class_option :quick, :default => false
-  class_option :git,   :default => false
-  class_option :reset, :default => false
-  class_option :app,   :type => :string, :default => 'hydra_tutorial_app'
+  class_option :quick
+  class_option :git
+  class_option :reset
+  class_option :debug_steps
+  class_option :app, :type => :string
 
   argument(
     :task_args, 
@@ -86,37 +88,43 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     :optional => true
   )
 
-  def setup_options
-    $quick    = options[:quick]
-    $git      = options[:git]
-    $reset    = options[:reset]
-    $app_root = options[:app].strip.parameterize('_')
-
-  end
-
   def main
+    $quick       = options[:quick]
+    $git         = options[:git]
+    $reset       = options[:reset]
+    $app_root    = options[:app]
+    $debug_steps = options[:debug_steps]
+
     pfn = progress_file_name()
-    if $reset
-      FileUtils.rm_f(pfn)
+
+    if $reset or not(File.file?(pfn))
+      File.open(pfn, "w") { |f| f.puts("---\n") }
       exit
     end
-    FileUtils.touch(pfn) unless File.file?(pfn)
 
-    done = Set.new(File.read(pfn).split("\n"))
+    h = YAML.load_file(pfn) || {}
+    h[:app_root] = ($app_root || h[:app_root] || 'hydra_tutorial_app').strip.parameterize('_')
+    h[:done]   ||= []
 
     if task_args and task_args.size > 0
       task = task_args.shift
     else
-      task = all_tasks.reject { |t| done.include?(t) }.first
+      task = all_tasks.reject { |t| h[:done].include?(t) }.first
     end
 
     if task
-      Tutorial.new.send(task, *task_args)
-      done << task
-      File.open(pfn, "w") { |f| f.puts(done.to_a.join "\n") }
+      Tutorial.new.send(task, *task_args) unless $debug_steps
+      h[:done] << task
+      File.open(pfn, "w") { |f| f.puts(h.to_yaml) }
     else
       puts "All tasks have been completed. Use --reset."
     end
+
+    if $debug_steps
+      run "cat #{pfn}", :verbose => false
+      exit
+    end
+
   end
 
   class Tutorial < Thor
