@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 
-exec File.expand_path(File.join(File.dirname(__FILE__), '..', 'tutorial.thor')), *ARGV
-
+tutorial = File.join(File.dirname(__FILE__), '..', 'tutorial.thor')
+exec(tutorial, *ARGV)
