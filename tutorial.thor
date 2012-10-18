@@ -351,7 +351,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
   class BuildingABasicRailsApp < Thor::Group
 
     def self.source_paths
-      [File.join($base_templates_path, "building_a_basic_rails_app")]
+      [$base_templates_path]
     end
 
     def adding_dependencies
@@ -426,7 +426,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     include TutorialActions
 
     def self.source_paths
-      [File.join($base_templates_path, "adding_our_models")]
+      [$base_templates_path]
     end
 
     def add_activefedora
@@ -570,7 +570,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     include TutorialActions
 
     def self.source_paths
-      [File.join($base_templates_path, "wiring_it_into_rails")]
+      [$base_templates_path]
     end
     
     def record_generator
@@ -758,7 +758,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     include TutorialActions
 
     def self.source_paths
-      [File.join($base_templates_path, "add_tests")]
+      [$base_templates_path]
     end
 
 
@@ -876,7 +876,7 @@ end
     include TutorialActions
 
     def self.source_paths
-      [File.join($base_templates_path, "sprinkle_some_styling")]
+      [$base_templates_path]
     end
 
 
@@ -911,7 +911,7 @@ end
     include TutorialActions
     
     def self.source_paths
-      [File.join($base_templates_path, "add_file_upload")]
+      [$base_templates_path]
     end
 
     def add_file_uploads
