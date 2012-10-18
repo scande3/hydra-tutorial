@@ -18,58 +18,6 @@ module HydraTutorialHelpers
 
   @@conf = nil
 
-  def all_tasks
-    return [
-      [ false, 'welcome' ],
-      [ false, 'install_ruby' ],
-      [ false, 'install_bundler_and_rails' ],
-      [ false, 'new_rails_app' ],
-      [ true,  'git_initial_commit' ],
-      [ true,  'out_of_the_box' ],
-    ]
-    to_do = [
-      [ true,  'adding_dependencies' ],
-      [ true,  'add_fedora_and_solr_with_hydrajetty' ],
-      [ true,  'jetty_configuration ' ],
-      [ true,  'remove_public_index' ],
-      [ true,  'add_activefedora' ],
-      [ true,  'add_initial_model' ],
-      [ true,  'rails_console_tour' ],
-      [ true,  'enhance_model_with_contrieved_descmd' ],
-      [ true,  'testing_the_contrieved_descmd' ],
-      [ true,  'use_the_delegate_method' ],
-      [ true,  'add_mods_model_with_mods_descmd' ],
-      [ true,  'record_generator' ],
-      [ true,  'add_new_form' ],
-      [ true,  'check_it_out' ],
-      [ true,  'add_gems' ],
-      [ true,  'run_generators' ],
-      [ true,  'db_migrate' ],
-      [ true,  'hydra_jetty_conf' ],
-      [ true,  'do_it' ],
-      [ true,  'look_at_it' ],
-      [ true,  'install_rspec' ],
-      [ true,  'write_our_first_test' ],
-      [ true,  'a_model_test' ],
-      [ true,  'install_capybara' ],
-      [ true,  'an_integration_test' ],
-      [ true,  'run_tests_x3' ],
-      [ true,  'add_jettywrapper_ci_task' ],
-      [ true,  'add_coverage_stats' ],
-      [ true,  'coverage_prompt' ],
-      [ true,  'add_file_uploads' ],
-      [ true,  'add_file_upload_controller' ],
-      [ true,  'add_file_upload_ui' ],
-      [ true,  'fix_add_assets_links' ],
-      [ true,  'add_collection_model' ],
-      [ true,  'add_collection_controller' ],
-      [ true,  'add_collection_reference_to_record' ],
-      [ true,  'add_datastream_and_terminology' ],
-      [ true,  'start_everything' ],
-      [ true,  'stop_jetty' ],
-    ]
-  end
-
   def run_git_commands(cmds, msg = 'COMMIT_MSG')
     cmds.each do |cmd|
       cmd += " '#{msg}'" if cmd =~ /^commit/
@@ -129,7 +77,8 @@ class HydraTutorial < Thor
     :reset,
     :app_root,
     :debug_steps,
-    :progress_file
+    :progress_file,
+    :done
   )
 
   desc('main: FIX', 'FIX')
@@ -142,68 +91,155 @@ class HydraTutorial < Thor
     :app         => :string,
   )
 
+  def self.tutorial_tasks
+    return [
+      [ false, 'welcome' ],
+      [ false, 'install_ruby' ],
+      [ false, 'install_bundler_and_rails' ],
+      [ false, 'new_rails_app' ],
+      [ true,  'git_initial_commit' ],
+      [ true,  'out_of_the_box' ],
+    ]
+    to_do = [
+      [ true,  'adding_dependencies' ],
+      [ true,  'add_fedora_and_solr_with_hydrajetty' ],
+      [ true,  'jetty_configuration ' ],
+      [ true,  'remove_public_index' ],
+      [ true,  'add_activefedora' ],
+      [ true,  'add_initial_model' ],
+      [ true,  'rails_console_tour' ],
+      [ true,  'enhance_model_with_contrieved_descmd' ],
+      [ true,  'testing_the_contrieved_descmd' ],
+      [ true,  'use_the_delegate_method' ],
+      [ true,  'add_mods_model_with_mods_descmd' ],
+      [ true,  'record_generator' ],
+      [ true,  'add_new_form' ],
+      [ true,  'check_it_out' ],
+      [ true,  'add_gems' ],
+      [ true,  'run_generators' ],
+      [ true,  'db_migrate' ],
+      [ true,  'hydra_jetty_conf' ],
+      [ true,  'do_it' ],
+      [ true,  'look_at_it' ],
+      [ true,  'install_rspec' ],
+      [ true,  'write_our_first_test' ],
+      [ true,  'a_model_test' ],
+      [ true,  'install_capybara' ],
+      [ true,  'an_integration_test' ],
+      [ true,  'run_tests_x3' ],
+      [ true,  'add_jettywrapper_ci_task' ],
+      [ true,  'add_coverage_stats' ],
+      [ true,  'coverage_prompt' ],
+      [ true,  'add_file_uploads' ],
+      [ true,  'add_file_upload_controller' ],
+      [ true,  'add_file_upload_ui' ],
+      [ true,  'fix_add_assets_links' ],
+      [ true,  'add_collection_model' ],
+      [ true,  'add_collection_controller' ],
+      [ true,  'add_collection_reference_to_record' ],
+      [ true,  'add_datastream_and_terminology' ],
+      [ true,  'start_everything' ],
+      [ true,  'stop_jetty' ],
+    ]
+  end
+
   def self.source_paths
     [@@conf.templates_path]
   end
 
-  def main(*tasks)
-    @@conf                = HTConf.new
-    @@conf.templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
-    @@conf.quick          = options[:quick]
-    @@conf.run_all        = options[:all]
-    @@conf.git            = options[:git]
-    @@conf.reset          = options[:reset]
-    @@conf.app_root       = options[:app]
-    @@conf.debug_steps    = options[:debug_steps]
-    @@conf.progress_file  = '.hydra-tutorial-progress'
+  ####
+  # The main task that is invoked by the gem's executable script.
+  #
+  # This task invokes either the next task in the tutorial or
+  # the task(s) explicitly requested by the user.
+  ####
 
-    pf = @@conf.progress_file
+  def main(*requested_tasks)
+    # Setup.
+    HydraTutorial.initialize_config(options)
+    HydraTutorial.initialize_progress_file
+    HydraTutorial.load_progress_info
+    tasks = HydraTutorial.determine_tasks_to_run(requested_tasks)
 
-    if @@conf.reset or not(File.file?(pf))
-      File.open(pf, "w") { |f| f.puts("---\n") }
-      exit
-    end
-
-    h = YAML.load_file(pf) || {}
-    h[:app_root] = (@@conf.app_root || h[:app_root] || 'hydra_tutorial_app').strip.parameterize('_')
-    h[:done]   ||= []
-    @@conf.app_root = h[:app_root]
-
-    if tasks.size == 0
-      tasks = all_tasks.reject { |i, t| h[:done].include?(t) }
-      tasks = [tasks.first] unless (@@conf.run_all or tasks == [])
-    else
-      tasks = tasks.map { |user_task| 
-        matched_task = all_tasks.find { |i, t| user_task == t }
-        abort "Invalid task name: #{user_task}." unless matched_task
-        matched_task
+    # Run tasks.
+    tasks.each do |i, t|
+      # Either print the task that would be run (in debug mode) or run the task.
+      # Each task knows whether it should be run inside the app directory (when i==true).
+      if @@conf.debug_steps
+        say "Running: task=#{t.inspect}", STATEMENT
+      else
+        if i
+          inside(@@conf.app_root) { invoke(t, [], {}) }
+        else
+          invoke(t, [], {})
+        end
+      end
+      # Persist the fact that the task was run to the YAML progress file.
+      @@conf.done << t
+      File.open(@@conf.progress_file, "w") { |f|
+        h = { :app_root => @@conf.app_root, :done => @@conf.done }
+        f.puts(h.to_yaml)
       }
     end
 
-    if tasks.size > 0
-      tasks.each do |i, t|
-        if @@conf.debug_steps
-          puts "Running: task=#{t.inspect}"
-        else
-          if i
-            inside(@@conf.app_root) { invoke(t, [], {}) }
-          else
-            invoke(t, [], {})
-          end
-        end
-        h[:done] << t
-        File.open(pf, "w") { |f| f.puts(h.to_yaml) }
-      end
-    else
-      puts "All tasks have been completed. Use --reset."
+    # Inform user if the tutorial is finished.
+    if tasks.size == 0
+      msg = "All tasks have been completed. Use the --reset option to start over."
+      say(msg, WARNING)
     end
 
-    if @@conf.debug_steps
-      run "cat #{pf}", :verbose => false
-      exit
-    end
-
+    # In debug mode, we print the contents of the progress file.
+    run("cat #{@@conf.progress_file}", :verbose => false) if @@conf.debug_steps
   end
+
+  def self.initialize_config(opts)
+    @@conf                = HTConf.new
+    @@conf.templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
+    @@conf.quick          = opts[:quick]
+    @@conf.run_all        = opts[:all]
+    @@conf.git            = opts[:git]
+    @@conf.reset          = opts[:reset]
+    @@conf.app_root       = opts[:app]
+    @@conf.debug_steps    = opts[:debug_steps]
+    @@conf.progress_file  = '.hydra-tutorial-progress'
+    @@conf.done           = nil
+  end
+
+  def self.initialize_progress_file
+    return if (File.file?(@@conf.progress_file) and ! @@conf.reset)
+    File.open(@@conf.progress_file, "w") { |f|
+      f.puts("---\n")
+    }
+    exit if @@conf.reset
+  end
+
+  def self.load_progress_info
+    # Load progress info from YAML, and set defaults as needed.
+    # Set some @@conf values.
+    h               = YAML.load_file(@@conf.progress_file) || {}
+    root            = (@@conf.app_root || h[:app_root] || 'hydra_tutorial_app')
+    @@conf.app_root = root.strip.parameterize('_')
+    @@conf.done     = (h[:done] || [])
+  end
+
+  def self.determine_tasks_to_run(requested_tasks)
+    if requested_tasks.size == 0
+      tasks = tutorial_tasks.reject { |i, t| @@conf.done.include?(t) }
+      tasks = [tasks.first] unless (@@conf.run_all or tasks == [])
+    else
+      tasks = requested_tasks.map { |rt| 
+        task = tutorial_tasks.find { |i, t| rt == t }
+        abort "Invalid task name: #{rt}." unless task
+        task
+      }
+    end
+    return tasks
+  end
+
+
+  ####
+  # Steps in the tutorial.
+  ####
 
   desc('welcome: FIX', 'FIX')
   def welcome
