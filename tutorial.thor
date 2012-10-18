@@ -16,7 +16,7 @@ STATEMENT = Thor::Shell::Color::YELLOW
 QUESTION = Thor::Shell::Color::GREEN
 WAIT = Thor::Shell::Color::CYAN
 
-class HydraOpenRepositoriesTutorialApp < Thor::Group
+class HydraTutorialApp < Thor::Group
 
   include Thor::Actions
   include Rails::Generators::Actions
@@ -155,6 +155,10 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     include Rails::Generators::Actions
     include TutorialActions
 
+    def self.source_paths
+      [$base_templates_path]
+    end
+
     desc('welcome: FIX', 'FIX')
     def welcome
       say %Q{
@@ -281,84 +285,13 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       end
     end
 
-    ###HERE
-
-    desc('building_a_basic_rails_app: FIX', 'FIX')
-    def building_a_basic_rails_app
-      inside $app_root do
-        BuildingABasicRailsApp.start
-      end
-    end
-    
-    desc('adding_our_models: FIX', 'FIX')
-    def adding_our_models
-      inside $app_root do
-        AddingOurModels.start
-      end
-    end
-
-    desc('wiring_it_into_rails: FIX', 'FIX')
-    def wiring_it_into_rails 
-      inside $app_root do
-        WiringItIntoRails.start
-      end
-    end
-
-    desc('add_blacklight_and_hydra: FIX', 'FIX')
-    def add_blacklight_and_hydra
-      inside $app_root do
-        AddBlacklightAndHydra.start
-      end
-    end
-
-    desc('fixup_for_hydra: FIX', 'FIX')
-    def fixup_for_hydra
-      inside $app_root do
-        FixupForHydra.start
-      end
-    end
-
-    desc('add_tests: FIX', 'FIX')
-    def add_tests
-      inside $app_root do
-        AddTests.start
-      end
-    end
-
-    desc('add_file_upload: FIX', 'FIX')
-    def add_file_upload
-      inside $app_root do
-        AddFileUpload.start
-      end
-    end
-
-    desc('sprinkle_some_styling: FIX', 'FIX')
-    def sprinkle_some_styling
-      inside $app_root do
-        SprinkeSomeStyling.start
-      end
-    end
-
-    desc('cleanup: FIX', 'FIX')
-    def cleanup
-      inside $app_root do
-        Cleanup.start
-      end
-    end
-
-  end
-
-  class BuildingABasicRailsApp < Thor::Group
-
-    def self.source_paths
-      [$base_templates_path]
-    end
-
+    desc('adding_dependencies: FIX', 'FIX')
     def adding_dependencies
       gem 'execjs'
       gem 'therubyracer'
     end
 
+    desc('add_fedora_and_solr_with_hydrajetty: FIX', 'FIX')
     def add_fedora_and_solr_with_hydrajetty
 
       say %Q{
@@ -377,6 +310,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
     end
 
+    desc('jetty_configuration: FIX', 'FIX')
     def jetty_configuration 
       say %Q{
     We'll add some configuration yml files with information to connect 
@@ -414,21 +348,12 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
     end
 
     # and then clean up some cruft
+    desc('remove_public_index: FIX', 'FIX')
     def remove_public_index
       remove_file 'public/index.html'
     end
 
-  end
-
-  class AddingOurModels < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-
-    def self.source_paths
-      [$base_templates_path]
-    end
-
+    desc('add_activefedora: FIX', 'FIX')
     def add_activefedora
       say %Q{
     The active-fedora gem provides a way to model Fedora objects within Ruby.
@@ -446,6 +371,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       run 'bundle install'
     end
 
+    desc('add_initial_model: FIX', 'FIX')
     def add_initial_model
       say %Q{ 
     Now we'll add a basic ActiveFedora stub model for a 'Record'. 
@@ -460,6 +386,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       print_wrapped File.read('app/models/record.rb')
     end
 
+    desc('rails_console_tour: FIX', 'FIX')
     def rails_console_tour
 
       say %Q{
@@ -496,6 +423,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       rails_console unless $quick
     end
 
+    desc('enhance_model_with_contrieved_descmd: FIX', 'FIX')
     def enhance_model_with_contrieved_descmd
       say %Q{
     Instead of working with the Nokogiri XML document directly, we 
@@ -505,6 +433,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       copy_file "basic_om_model.rb", "app/models/record.rb"
     end
 
+    desc('testing_the_contrieved_descmd: FIX', 'FIX')
     def testing_the_contrieved_descmd
       say %Q{
     If you launch the Rails interactive console, we can now create and 
@@ -520,6 +449,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       rails_console unless $quick
     end
 
+    desc('use_the_delegate_method: FIX', 'FIX')
     def use_the_delegate_method
       say %Q{
     We can use the #delegate method to tell the model-object how 
@@ -537,6 +467,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       end
     end
 
+    desc('add_mods_model_with_mods_descmd: FIX', 'FIX')
     def add_mods_model_with_mods_descmd
       say %Q{
     We'll now replace the contrieved XML metadata schema with a simple
@@ -562,17 +493,8 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
       rails_console unless $quick
     end
-  end
 
-  class WiringItIntoRails < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-
-    def self.source_paths
-      [$base_templates_path]
-    end
-    
+    desc('record_generator: FIX', 'FIX')
     def record_generator
       say %Q{ 
     Now that we've set up our model and successfully added content
@@ -597,6 +519,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       continue_prompt
     end
 
+    desc('add_new_form: FIX', 'FIX')
     def add_new_form
 
       say %Q{
@@ -608,6 +531,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       copy_file "show.html.erb", "app/views/records/show.html.erb"
     end
 
+    desc('check_it_out: FIX', 'FIX')
     def check_it_out
 
       say %Q{
@@ -620,13 +544,8 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       rails_server '/records/new' unless $quick
     end
 
-  end
 
-  class AddBlacklightAndHydra < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-
+    desc('add_gems: FIX', 'FIX')
     def add_gems
       say %Q{
     Thus far, we've been using component parts of the Hydra framework, but 
@@ -657,6 +576,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       run 'bundle install'
     end
 
+    desc('run_generators: FIX', 'FIX')
     def run_generators
 
       say %Q{
@@ -669,6 +589,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       generate 'hydra:head', 'User'
     end
 
+    desc('db_migrate: FIX', 'FIX')
     def db_migrate
       say %Q{
     Blacklight uses a SQL database for keeping track of user bookmarks, 
@@ -678,6 +599,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       rake 'db:test:prepare'
     end
 
+    desc('hydra_jetty_conf: FIX', 'FIX')
     def hydra_jetty_conf
       say %Q{
     Hydra provides some configuration for Solr and Fedora. Use them.
@@ -686,13 +608,8 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       rake 'hydra:jetty:config'
       rake 'jetty:start'
     end
-  end
 
-  class FixupForHydra < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-
+    desc('do_it: FIX', 'FIX')
     def do_it
 
       say %Q{
@@ -734,6 +651,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
 
     end
 
+    desc('look_at_it: FIX', 'FIX')
     def look_at_it
       say %Q{
     Blacklight and Hydra-Head have added some new functionality to the 
@@ -750,18 +668,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       rails_server('/records/new') unless $quick
     end
 
-  end
-
-  class AddTests < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-
-    def self.source_paths
-      [$base_templates_path]
-    end
-
-
+    desc('install_rspec: FIX', 'FIX')
     def install_rspec
       say %Q{
     One of the great things about the Rails framework is the strong
@@ -777,6 +684,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       generate 'rspec:install'
     end
     
+    desc('write_our_first_test: FIX', 'FIX')
     def write_our_first_test
       say %Q{
     Here's a quick example of a test.
@@ -785,11 +693,13 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       run 'rspec'
     end
 
+    desc('a_model_test: FIX', 'FIX')
     def a_model_test
    #   copy_file 'record_test.rb', 'spec/models/record_test.rb'
       #run 'rspec'
     end
 
+    desc('install_capybara: FIX', 'FIX')
     def install_capybara
       say %Q{ 
     We also want to write integration tests to test the end-result that
@@ -804,6 +714,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
      # end
     end
 
+    desc('an_integration_test: FIX', 'FIX')
     def an_integration_test
       say %Q{
     Here's a quick integration test that proves deposit works.
@@ -811,6 +722,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       copy_file 'integration_spec.rb', 'spec/integration/integration_spec.rb'
     end
 
+    desc('run_tests_x3: FIX', 'FIX')
     def run_tests_x3
       say %Q{
       Now that the integration spec is in place, when we try to run rspec,
@@ -819,6 +731,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       run 'rspec'
     end
 
+    desc('add_jettywrapper_ci_task: FIX', 'FIX')
     def add_jettywrapper_ci_task
       say %Q{
       Instead, we need to add a new Rake task that knows how to wrap the 
@@ -832,6 +745,7 @@ class HydraOpenRepositoriesTutorialApp < Thor::Group
       rake 'jetty:start'
     end
 
+    desc('add_coverage_stats: FIX', 'FIX')
     def add_coverage_stats
       say %Q{
       Now that we have tests, we also want to have some coverage statistics.
@@ -861,6 +775,7 @@ end
       rake 'jetty:start'
     end
 
+    desc('coverage_prompt: FIX', 'FIX')
     def coverage_prompt
       say %Q{
       Go take a look at the coverage report, open the file ./coverage/index.html
@@ -868,52 +783,8 @@ end
       }, STATEMENT
       continue_prompt
     end
-  end
 
-  class SprinkeSomeStyling < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-
-    def self.source_paths
-      [$base_templates_path]
-    end
-
-
-    def fix_add_assets_links
-      say %Q{ 
-    We'll add a little styling to the Hydra app and add a link to add a new 
-    Record in the header of the layout.
-      }, STATEMENT
-      copy_file "_add_assets_links.html.erb", "app/views/_add_assets_links.html.erb"
-    end
-
-
-  end
-
-  class AddCollections
-    def add_collection_model
-
-    end
-
-    def add_collection_controller
-
-    end
-
-    def add_collection_reference_to_record
-
-    end
-  end
-
-  class AddFileUpload < Thor::Group
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
-    
-    def self.source_paths
-      [$base_templates_path]
-    end
-
+    desc('add_file_uploads: FIX', 'FIX')
     def add_file_uploads
       say %Q{ 
     Now that we have a basic Hydra application working with metadata-only, we
@@ -925,6 +796,7 @@ end
       end
     end
     
+    desc('add_file_upload_controller: FIX', 'FIX')
     def add_file_upload_controller
       say %Q{
     And educate our controller for managing file objects.
@@ -938,26 +810,44 @@ end
       end
     end
 
+    desc('add_file_upload_ui: FIX', 'FIX')
     def add_file_upload_ui
       say %Q{
     And add a file upload field on the form.
       }, STATEMENT
       copy_file "_form.html.erb", "app/views/records/_form.html.erb"
     end
-  end
 
-  class AddTechnicalMetadata
-    def add_datastream_and_terminology
-
+    desc('fix_add_assets_links: FIX', 'FIX')
+    def fix_add_assets_links
+      say %Q{ 
+    We'll add a little styling to the Hydra app and add a link to add a new 
+    Record in the header of the layout.
+      }, STATEMENT
+      copy_file "_add_assets_links.html.erb", "app/views/_add_assets_links.html.erb"
     end
-  end
 
-  class Cleanup < Thor::Group
+    desc('add_collection_model: FIX', 'FIX')
+    def add_collection_model
+      # TODO
+    end
 
-    include Thor::Actions
-    include Rails::Generators::Actions
-    include TutorialActions
+    desc('add_collection_controller: FIX', 'FIX')
+    def add_collection_controller
+      # TODO
+    end
 
+    desc('add_collection_reference_to_record: FIX', 'FIX')
+    def add_collection_reference_to_record
+      # TODO
+    end
+
+    desc('add_datastream_and_terminology: FIX', 'FIX')
+    def add_datastream_and_terminology
+      # TODO
+    end
+
+    desc('start_everything: FIX', 'FIX')
     def start_everything
       say %Q{
     This is the end of the tutorial. We'll give you a final chance to look 
@@ -968,11 +858,13 @@ end
       rails_server
     end
 
+    desc('stop_jetty: FIX', 'FIX')
     def stop_jetty
       rake 'jetty:stop'
     end
+
   end
 
 end
 
-HydraOpenRepositoriesTutorialApp.start
+HydraTutorialApp.start
