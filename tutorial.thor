@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#! /usr/bin/env ruby
 
 require 'rubygems'
 require 'thor'
@@ -6,85 +6,79 @@ require 'thor/group'
 require 'rails/generators/actions'
 require 'active_support/core_ext/array/extract_options'
 require 'active_support/core_ext/string/inflections'
-require 'set'
 require 'fileutils'
 require 'yaml'
 
-$base_templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
-
 STATEMENT = Thor::Shell::Color::YELLOW
-QUESTION = Thor::Shell::Color::GREEN
-WAIT = Thor::Shell::Color::CYAN
+QUESTION  = Thor::Shell::Color::GREEN
+WAIT      = Thor::Shell::Color::CYAN
+WARNING   = Thor::Shell::Color::RED
 
-class HydraTutorialApp < Thor::Group
+module HydraTutorialHelpers
 
-  include Thor::Actions
-  include Rails::Generators::Actions
+  def all_tasks
+    return %w(
+      welcome
+      install_ruby
+      install_bundler_and_rails
+      new_rails_app
+      git_initial_commit
+      out_of_the_box
+    )
+  end
 
-  module TutorialActions
-
-    def all_tasks
-      return %w(
-        welcome
-        install_ruby
-        install_bundler_and_rails
-        new_rails_app
-        git_initial_commit
-        out_of_the_box
-      )
-    end
-
-    def progress_file_name
-      return '.hydra-tutorial-progress'
-    end
-
-    def run_git_commands(cmds, msg = 'COMMIT_MSG')
-      inside $app_root do
-        cmds.each do |cmd|
-          cmd += " '#{msg}'" if cmd =~ /^commit/
-          run "git #{cmd}", :capture => true
-        end
+  def run_git_commands(cmds, msg = 'COMMIT_MSG')
+    inside $app_root do
+      cmds.each do |cmd|
+        cmd += " '#{msg}'" if cmd =~ /^commit/
+        run "git #{cmd}", :capture => true
       end
-    end
-
-    def continue_prompt
-      return if $quick
-      return unless $run_all
-      ask %Q{
-    HIT <ENTER> KEY TO CONTINUE
-      }, WAIT
-    end
-
-    def rails_console
-      say %Q{
-    We'll launch the console again. Give some of those commands a try.
-      }, STATEMENT
-
-      say %Q{
-
-    Hit Ctrl-D (^D) to stop the Rails console and continue this tutorial.
-      }, WAIT
-
-      run "rails c"
-    end
-
-    def rails_server url = '/'
-      say %Q{
-    We'll start the Rails server for you. It should be available in 
-    your browser at:
-
-       http://localhost:3000#{url}
-      }, STATEMENT
-
-      say %Q{
-    Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.
-      }, WAIT
-
-      run "rails s"
     end
   end
 
-  include TutorialActions
+  def continue_prompt
+    return if $quick
+    return unless $run_all
+    ask %Q{
+  HIT <ENTER> KEY TO CONTINUE
+    }, WAIT
+  end
+
+  def rails_console
+    say %Q{
+  We'll launch the console again. Give some of those commands a try.
+    }, STATEMENT
+
+    say %Q{
+
+  Hit Ctrl-D (^D) to stop the Rails console and continue this tutorial.
+    }, WAIT
+
+    run "rails c"
+  end
+
+  def rails_server url = '/'
+    say %Q{
+  We'll start the Rails server for you. It should be available in 
+  your browser at:
+
+     http://localhost:3000#{url}
+    }, STATEMENT
+
+    say %Q{
+  Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.
+    }, WAIT
+
+    run "rails s"
+  end
+
+end
+
+class HydraTutorialMain < Thor::Group
+
+  include Thor::Actions
+  include Rails::Generators::Actions
+  include HydraTutorialHelpers
 
   class_option :quick
   class_option :all
@@ -101,21 +95,23 @@ class HydraTutorialApp < Thor::Group
   )
 
   def main
-    $quick       = options[:quick]
-    $run_all     = options[:all]
-    $git         = options[:git]
-    $reset       = options[:reset]
-    $app_root    = options[:app]
-    $debug_steps = options[:debug_steps]
+    $templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
+    $quick          = options[:quick]
+    $run_all        = options[:all]
+    $git            = options[:git]
+    $reset          = options[:reset]
+    $app_root       = options[:app]
+    $debug_steps    = options[:debug_steps]
+    $progress_file  = '.hydra-tutorial-progress'
 
-    pfn = progress_file_name()
+    pf = $progress_file
 
-    if $reset or not(File.file?(pfn))
-      File.open(pfn, "w") { |f| f.puts("---\n") }
+    if $reset or not(File.file?(pf))
+      File.open(pf, "w") { |f| f.puts("---\n") }
       exit
     end
 
-    h = YAML.load_file(pfn) || {}
+    h = YAML.load_file(pf) || {}
     h[:app_root] = ($app_root || h[:app_root] || 'hydra_tutorial_app').strip.parameterize('_')
     h[:done]   ||= []
     $app_root = h[:app_root]
@@ -133,30 +129,30 @@ class HydraTutorialApp < Thor::Group
         if $debug_steps
           puts "Running: task=#{t.inspect}"
         else
-          Tutorial.new.send(t)
+          HydraTutorial.new.send(t)
         end
         h[:done] << t
-        File.open(pfn, "w") { |f| f.puts(h.to_yaml) }
+        File.open(pf, "w") { |f| f.puts(h.to_yaml) }
       end
     else
       puts "All tasks have been completed. Use --reset."
     end
 
     if $debug_steps
-      run "cat #{pfn}", :verbose => false
+      run "cat #{pf}", :verbose => false
       exit
     end
 
   end
 
-  class Tutorial < Thor
+  class HydraTutorial < Thor
 
     include Thor::Actions
     include Rails::Generators::Actions
-    include TutorialActions
+    include HydraTutorialHelpers
 
     def self.source_paths
-      [$base_templates_path]
+      [$templates_path]
     end
 
     desc('welcome: FIX', 'FIX')
@@ -216,7 +212,7 @@ class HydraTutorialApp < Thor::Group
 
     [1] http://rvm.io/
     [2] https://github.com/sstephenson/rbenv/
-      }, Thor::Shell::Color::RED
+      }, WARNING
 
       continue_prompt
 
@@ -243,7 +239,7 @@ class HydraTutorialApp < Thor::Group
         say %Q{
       #{$app_root} already exists. Either remove it or provide 
       a different application name using the --app option.
-        }, Thor::Shell::Color::RED
+        }, WARNING
         exit
       end
 
@@ -867,4 +863,4 @@ end
 
 end
 
-HydraTutorialApp.start
+HydraTutorialMain.start
