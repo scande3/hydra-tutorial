@@ -8,6 +8,7 @@ require 'active_support/core_ext/array/extract_options'
 require 'active_support/core_ext/string/inflections'
 require 'fileutils'
 require 'yaml'
+require 'set'
 
 STATEMENT = Thor::Shell::Color::YELLOW
 QUESTION  = Thor::Shell::Color::GREEN
@@ -44,7 +45,7 @@ module HydraTutorialHelpers
   def rails_server url = '/'
     return if @@conf.quick
     say %Q{
-  We'll start the Rails server for you. It should be available in 
+  We'll start the Rails server for you. It should be available in
   your browser at:
 
      http://localhost:3000#{url}\n}, STATEMENT
@@ -83,55 +84,17 @@ class HydraTutorial < Thor
     :app           => :string,
   )
 
+  def self.outside_tasks
+    return Set.new(%w(
+      welcome
+      install_ruby
+      install_bundler_and_rails
+      new_rails_app
+    ))
+  end
+
   def self.tutorial_tasks
-    return [
-      [ false, 'welcome' ],
-      [ false, 'install_ruby' ],
-      [ false, 'install_bundler_and_rails' ],
-      [ false, 'new_rails_app' ],
-      [ true,  'git_initial_commit' ],
-      [ true,  'out_of_the_box' ],
-      [ true,  'adding_dependencies' ],
-      [ true,  'add_fedora_and_solr_with_hydrajetty' ],
-      [ true,  'jetty_configuration' ],
-      [ true,  'remove_public_index' ],
-      [ true,  'add_activefedora' ],
-      [ true,  'add_initial_model' ],
-      [ true,  'rails_console_tour' ],
-      [ true,  'enhance_model_with_om_descmd' ],
-      [ true,  'experiment_with_om_descmd' ],
-      [ true,  'use_the_delegate_method' ],
-      [ true,  'add_mods_model_with_mods_descmd' ],
-      [ true,  'experiment_with_mods_descmd' ],
-      [ true,  'record_generator' ],
-      [ true,  'add_new_form' ],
-      [ true,  'check_the_new_form' ],
-      [ true,  'add_hydra_gems' ],
-      [ true,  'run_hydra_generators' ],
-      [ true,  'db_migrate' ],
-      [ true,  'hydra_jetty_config' ],
-      [ true,  'add_access_rights' ],
-      [ true,  'check_catalog' ],
-      [ true,  'install_rspec' ],
-      [ true,  'write_model_test' ],
-      [ true,  'write_controller_test' ],
-      [ true,  'install_capybara' ],
-      [ true,  'write_integration_test' ],
-      [ true,  'run_integration_test_fail' ],
-      [ true,  'add_jettywrapper_ci_task' ],
-      [ true,  'add_coverage_stats' ],
-      [ true,  'add_file_uploads' ],
-      [ true,  'add_file_upload_controller' ],
-      [ true,  'add_file_upload_ui' ],
-      [ true,  'fix_add_assets_links' ],
-      # [ true,  'add_collection_model' ],
-      # [ true,  'add_collection_controller' ],
-      # [ true,  'add_collection_reference_to_record' ],
-      # [ true,  'add_datastream_and_terminology' ],
-      [ true,  'start_everything' ],
-      [ true,  'stop_jetty' ],
-      [ true,  'foobar' ],
-    ]
+    return tasks.keys.reject { |t| t == 'main' }
   end
 
   def self.source_paths
@@ -150,19 +113,21 @@ class HydraTutorial < Thor
     HydraTutorial.initialize_config(options)
     HydraTutorial.initialize_progress_file
     HydraTutorial.load_progress_info
-    tasks = HydraTutorial.determine_tasks_to_run(requested_tasks)
+    ts      = HydraTutorial.determine_tasks_to_run(requested_tasks)
+    outside = HydraTutorial.outside_tasks
 
     # Run tasks.
-    tasks.each do |i, t|
+    ts.each do |t|
       # Either print the task that would be run (in debug mode) or run the task.
-      # Each task knows whether it should be run inside the app directory (when i==true).
       if @@conf.debug_steps
         say "Running: task=#{t.inspect}", STATEMENT
       else
-        if i
-          inside(@@conf.app_root) { invoke(t, [], {}) }
-        else
+        # A few of the initial tasks run outside the Rails app directory,
+        # but most run inside the app directory.
+        if outside.include?(t)
           invoke(t, [], {})
+        else
+          inside(@@conf.app_root) { invoke(t, [], {}) }
         end
       end
       # Persist the fact that the task was run to the YAML progress file.
@@ -174,7 +139,7 @@ class HydraTutorial < Thor
     end
 
     # Inform user if the tutorial is finished.
-    if tasks.size == 0
+    if ts.size == 0
       msg = "All tasks have been completed. Use the --reset option to start over."
       say(msg, WARNING)
     end
@@ -215,16 +180,17 @@ class HydraTutorial < Thor
 
   def self.determine_tasks_to_run(requested_tasks)
     if requested_tasks.size == 0
-      tasks = tutorial_tasks.reject { |i, t| @@conf.done.include?(t) }
-      tasks = [tasks.first] unless (@@conf.run_all or tasks == [])
+      done = Set.new(@@conf.done)
+      ts   = tutorial_tasks.reject { |t| done.include?(t) }
+      ts   = [ts.first] unless (@@conf.run_all or ts == [])
+      return ts
     else
-      tasks = requested_tasks.map { |rt| 
-        task = tutorial_tasks.find { |i, t| rt == t }
-        abort "Invalid task name: #{rt}." unless task
-        task
+      valid = Set.new(tutorial_tasks)
+      requested_tasks.each { |rt|
+        abort "Invalid task name: #{rt}." unless valid.include?(rt)
       }
+      return requested_tasks
     end
-    return tasks
   end
 
 
@@ -235,21 +201,21 @@ class HydraTutorial < Thor
   desc('welcome: FIX', 'FIX')
   def welcome
     say %Q{
-    Welcome to this Hydra tutorial. We're going to step through building a 
-    working Hydra application. We'll build the application gradually, starting 
-    by building our "business logic", wiring in HTML views, and then 
+    Welcome to this Hydra tutorial. We're going to step through building a
+    working Hydra application. We'll build the application gradually, starting
+    by building our "business logic", wiring in HTML views, and then
     connecting it to our Rails application.
 
-    At several points in this tutorial, as we iteratively develop our files, 
-    you may be prompted to review conflicts between versions of files. It is 
-    safe to blindly accept the changes ('y'), however you may wish to view 
+    At several points in this tutorial, as we iteratively develop our files,
+    you may be prompted to review conflicts between versions of files. It is
+    safe to blindly accept the changes ('y'), however you may wish to view
     the diff ('d') to see the things we're change.
 
     This tutorial, a README file, and our bug tracker are at:
-        
+
         https://github.com/projecthydra/hydra-tutorial
 
-    We'll generate a stub application in the #{@@conf.app_root} 
+    We'll generate a stub application in the #{@@conf.app_root}
     folder. You can change that using the --app option.
     }, STATEMENT
   end
@@ -257,7 +223,7 @@ class HydraTutorial < Thor
   desc('install_ruby: FIX', 'FIX')
   def install_ruby
     return if @@conf.quick
-    say %Q{ 
+    say %Q{
   Obviously, if you can run this tutorial, you have already installed ruby.
     }, STATEMENT
 
@@ -273,18 +239,18 @@ class HydraTutorial < Thor
 
     if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/
       say %Q{
-  It looks like you're using rvm/rbenv/etc. We'll use 
+  It looks like you're using rvm/rbenv/etc. We'll use
   this environment to build the application.
     }, STATEMENT
 
     else
 
     say %Q{
-  We checked, and it looks like you might be using a system-wide ruby. 
-  We suggest you use somethng like rvm [1], rbenv [2], etc to manage 
+  We checked, and it looks like you might be using a system-wide ruby.
+  We suggest you use somethng like rvm [1], rbenv [2], etc to manage
   your ruby projects.
 
-  You can continue and hope for the best, or go install one of these 
+  You can continue and hope for the best, or go install one of these
   ruby managers, which may make your life easier.
 
   [1] http://rvm.io/
@@ -300,7 +266,7 @@ class HydraTutorial < Thor
   desc('install_bundler_and_rails: FIX', 'FIX')
   def install_bundler_and_rails
     say %Q{
-  We're going to install some prerequisite gems in order to create our 
+  We're going to install some prerequisite gems in order to create our
   skeleton Rails application.\n}, STATEMENT
     run 'gem install bundler rails', :capture => true
   end
@@ -312,7 +278,7 @@ class HydraTutorial < Thor
 
     if File.exists? @@conf.app_root
       say %Q{
-    #{@@conf.app_root} already exists. Either remove it or provide 
+    #{@@conf.app_root} already exists. Either remove it or provide
     a different application name using the --app option.}, WARNING
       exit
     end
@@ -336,14 +302,14 @@ class HydraTutorial < Thor
   def out_of_the_box
     return if @@conf.quick
     say %Q{
-  Here's a chance to look around. You can see the structure of 
+  Here's a chance to look around. You can see the structure of
   a Rails application. In particular, look at:
      ./app
      ./config
      ./lib
      Gemfile
 
-  If we launched the Rails application server, we can see the application 
+  If we launched the Rails application server, we can see the application
   running in the browser and you can see if everything is working.\n}, STATEMENT
 
     rails_server
@@ -360,7 +326,7 @@ class HydraTutorial < Thor
   def add_fedora_and_solr_with_hydrajetty
     say %Q{
   Fedora runs as a Java servlet inside a container like Tomcat or Jetty.
-  Hydra provides a bundled version of Fedora and Solr for 
+  Hydra provides a bundled version of Fedora and Solr for
   testing and development.\n}, STATEMENT
 
     say %Q{
@@ -377,9 +343,9 @@ class HydraTutorial < Thor
   end
 
   desc('jetty_configuration: FIX', 'FIX')
-  def jetty_configuration 
+  def jetty_configuration
     say %Q{
-  We'll add some configuration yml files with information to connect 
+  We'll add some configuration yml files with information to connect
   to Solr and Fedora.\n\n}, STATEMENT
 
     copy_file 'solr.yml', 'config/solr.yml'
@@ -396,8 +362,8 @@ class HydraTutorial < Thor
   Starting Jetty\n}, STATEMENT
     rake 'jetty:start'
 
-    say %Q{ 
-  Take a look around. Jetty should be running on port 8983. You can see 
+    say %Q{
+  Take a look around. Jetty should be running on port 8983. You can see
   the Fedora server at:
 
     http://localhost:8983/fedora/
@@ -419,8 +385,8 @@ class HydraTutorial < Thor
   def add_activefedora
     say %Q{
   The active-fedora gem provides a way to model Fedora objects within Ruby.
-  It will help you create Ruby models for creating, updating and reading 
-  objects from Fedora using a domain-specific language (DSL) similar 
+  It will help you create Ruby models for creating, updating and reading
+  objects from Fedora using a domain-specific language (DSL) similar
   to the Rails' ActiveRecord.
 
   The om gem provides mechanisms for mapping XML documents into Ruby.
@@ -434,7 +400,7 @@ class HydraTutorial < Thor
 
   desc('add_initial_model: FIX', 'FIX')
   def add_initial_model
-    say %Q{ 
+    say %Q{
   Now we'll add a basic ActiveFedora stub model for a 'Record'.\n\n}, STATEMENT
     copy_file "basic_af_model.rb", "app/models/record.rb"
     run_git('Created a minimal Record model')
@@ -443,8 +409,8 @@ class HydraTutorial < Thor
   desc('rails_console_tour: FIX', 'FIX')
   def rails_console_tour
     say %Q{
-  Now we'll give you a chance to look at the Record model. If you 
-  launch the Rails interactive console (`rails c`), we can create 
+  Now we'll give you a chance to look at the Record model. If you
+  launch the Rails interactive console (`rails c`), we can create
   and manipulate our object:
 
       ## CREATE
@@ -453,7 +419,7 @@ class HydraTutorial < Thor
       > obj.descMetadata.content = e.g. '<my_xml_content />'
       > obj.save
 
-      > obj.pid  
+      > obj.pid
       # => e.g. 'changeme:1'
 
       ## RETRIEVE
@@ -465,7 +431,7 @@ class HydraTutorial < Thor
 
       ## UPDATE
       # manipulating XML:
-      > ds.ng_xml.xpath('//my_xml_content') 
+      > ds.ng_xml.xpath('//my_xml_content')
 
       ## DELETE
       > obj.delete\n}, STATEMENT
@@ -475,8 +441,8 @@ class HydraTutorial < Thor
   desc('enhance_model_with_om_descmd: FIX', 'FIX')
   def enhance_model_with_om_descmd
     say %Q{
-  Instead of working with the Nokogiri XML document directly, we 
-  can use OM to make querying an XML document easier. We'll replace the 
+  Instead of working with the Nokogiri XML document directly, we
+  can use OM to make querying an XML document easier. We'll replace the
   previous Record with a OM-enabled document.\n\n}, STATEMENT
     f = "app/models/record.rb"
     remove_file f
@@ -487,7 +453,7 @@ class HydraTutorial < Thor
   desc('experiment_with_om_descmd: FIX', 'FIX')
   def experiment_with_om_descmd
     say %Q{
-  If you launch the Rails interactive console, we can now create and 
+  If you launch the Rails interactive console, we can now create and
   manipulate our object using methods provided by OM.
 
       > obj = Record.new
@@ -501,7 +467,7 @@ class HydraTutorial < Thor
   desc('use_the_delegate_method: FIX', 'FIX')
   def use_the_delegate_method
     say %Q{
-  We can use the #delegate method to tell the model-object how 
+  We can use the #delegate method to tell the model-object how
   to access these attributes.
 
       > obj = Record.new
@@ -536,7 +502,7 @@ class HydraTutorial < Thor
   desc('experiment_with_mods_descmd: FIX', 'FIX')
   def experiment_with_mods_descmd
     say %Q{
-  If you launch the Rails interactive console, we can now create 
+  If you launch the Rails interactive console, we can now create
   and manipulate our object using methods provided by OM.
 
       > obj = Record.new
@@ -549,12 +515,12 @@ class HydraTutorial < Thor
 
   desc('record_generator: FIX', 'FIX')
   def record_generator
-    say %Q{ 
+    say %Q{
   Now that we've set up our model and successfully added content
   into Fedora, now we want to connect the model to a Rails web application.
 
-  We'll start by using the standard Rails generators to create 
-  a scaffold controller and views, which will give us a 
+  We'll start by using the standard Rails generators to create
+  a scaffold controller and views, which will give us a
   place to start working.\n\n}, STATEMENT
 
     generate "scaffold_controller Record --no-helper --skip-test-framework"
@@ -562,10 +528,10 @@ class HydraTutorial < Thor
     run_git('Used Rails generator to create controller and views for the Record model')
 
     say %Q{
-  If you look in ./app/views/records, you can see a set of 
+  If you look in ./app/views/records, you can see a set of
   Rails ERB templates.
 
-  ./app/controlers/records_controller.rb contains the controller 
+  ./app/controlers/records_controller.rb contains the controller
   that ties the model to the views.\n}, STATEMENT
 
     continue_prompt
@@ -574,7 +540,7 @@ class HydraTutorial < Thor
   desc('add_new_form: FIX', 'FIX')
   def add_new_form
     say %Q{
- The scaffold just provided the basic outline for an application, so 
+ The scaffold just provided the basic outline for an application, so
  we need to provide the guts for the web form. Here's a simple one:\n\n}, STATEMENT
     files = [
       ["_form.wiring_it_into_rails.html.erb", "app/views/records/_form.html.erb"],
@@ -591,7 +557,7 @@ class HydraTutorial < Thor
   def check_the_new_form
     say %Q{
  If we start the Rails server, we should now be able to visit the records
- in the browser, create new records, and edit existing records. 
+ in the browser, create new records, and edit existing records.
 
  Start by creating a new record:\n}, STATEMENT
     rails_server '/records/new'
@@ -600,9 +566,9 @@ class HydraTutorial < Thor
   desc('add_hydra_gems: FIX', 'FIX')
   def add_hydra_gems
     say %Q{
-  Thus far, we've been using component parts of the Hydra framework, but 
-  now we'll add in the whole framework so we can take advantage of common 
-  patterns that have emerged in the Hydra community, including search, 
+  Thus far, we've been using component parts of the Hydra framework, but
+  now we'll add in the whole framework so we can take advantage of common
+  patterns that have emerged in the Hydra community, including search,
   gated discovery, etc.
 
   We'll add a few new gems:
@@ -611,7 +577,7 @@ class HydraTutorial < Thor
 
     - hydra-head provides a number of common Hydra patterns
 
-    - devise is a standard Ruby gem for providing user-related 
+    - devise is a standard Ruby gem for providing user-related
       functions, like registration, sign-in, etc.\n\n}, STATEMENT
 
     if @@conf.gems_from_git
@@ -629,7 +595,7 @@ class HydraTutorial < Thor
   desc('run_hydra_generators: FIX', 'FIX')
   def run_hydra_generators
     say %Q{
-  These gems provide generators for adding basic views, styles, and override 
+  These gems provide generators for adding basic views, styles, and override
   points into your application. We'll run these generators now.\n}, STATEMENT
     f = 'config/solr.yml'
     remove_file f
@@ -643,7 +609,7 @@ class HydraTutorial < Thor
   desc('db_migrate: FIX', 'FIX')
   def db_migrate
     say %Q{
-  Blacklight uses a SQL database for keeping track of user bookmarks, 
+  Blacklight uses a SQL database for keeping track of user bookmarks,
   searches, etc. We'll run the migrations next:\n\n}, STATEMENT
     rake 'db:migrate'
     rake 'db:test:prepare'
@@ -662,9 +628,9 @@ class HydraTutorial < Thor
   desc('add_access_rights: FIX', 'FIX')
   def add_access_rights
     say %Q{
-  We need to make a couple changes to our controller and model to make 
+  We need to make a couple changes to our controller and model to make
   them fully-compliant objects by teaching them about access rights.
-      
+
   We'll also update our controller to provide access controls on records.\n\n}, STATEMENT
 
     inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
@@ -703,9 +669,9 @@ include Hydra::Solr::Document
   desc('check_catalog: FIX', 'FIX')
   def check_catalog
     say %Q{
-  Blacklight and Hydra-Head have added some new functionality to the 
-  application. We can now look at a search interface (provided 
-  by Blacklight) and use gated discovery over our repository. By default, 
+  Blacklight and Hydra-Head have added some new functionality to the
+  application. We can now look at a search interface (provided
+  by Blacklight) and use gated discovery over our repository. By default,
   objects are only visible to their creator.
 
   Create some new objects, and then check out the search catalog at:
@@ -729,7 +695,7 @@ include Hydra::Solr::Document
   def install_rspec
     say %Q{
   One of the great things about the Rails framework is the strong
-  testing ethic. We'll use rspec to write a couple tests for 
+  testing ethic. We'll use rspec to write a couple tests for
   this application.\n\n}, STATEMENT
     gem_group :development, :test do
       gem 'rspec'
@@ -739,7 +705,7 @@ include Hydra::Solr::Document
     generate 'rspec:install'
     run_git('Added rspec to project')
   end
-  
+
   # TODO: write the test.
   desc('write_model_test: FIX', 'FIX')
   def write_model_test
@@ -760,7 +726,7 @@ include Hydra::Solr::Document
 
   desc('install_capybara: FIX', 'FIX')
   def install_capybara
-    say %Q{ 
+    say %Q{
   We also want to write integration tests to test the end-result that
   a user may see. We'll add the capybara gem to do that.\n\n}, STATEMENT
     gem_group :development, :test do
@@ -790,7 +756,7 @@ include Hydra::Solr::Document
   desc('add_jettywrapper_ci_task: FIX', 'FIX')
   def add_jettywrapper_ci_task
     say %Q{
-    Instead, we need to add a new Rake task that knows how to wrap the 
+    Instead, we need to add a new Rake task that knows how to wrap the
     test suite --  start jetty before running the tests and stop jetty
     at the end. We can use a feature provided by jettywrapper to do this.\n\n}, STATEMENT
     copy_file 'ci.rake', 'lib/tasks/ci.rake'
@@ -842,16 +808,16 @@ end
 
   desc('add_file_uploads: FIX', 'FIX')
   def add_file_uploads
-    say %Q{ 
+    say %Q{
   Now that we have a basic Hydra application working with metadata-only, we
-  want to enhance that with the ability to upload files. Let's add a new 
+  want to enhance that with the ability to upload files. Let's add a new
   datastream to our model.\n\n}, STATEMENT
     inject_into_class 'app/models/record.rb', 'Record' do
       "has_file_datastream :name => 'content', :type => ActiveFedora::Datastream\n"
     end
     run_git('Add file uploads to model')
   end
-  
+
   # TODO: combine with previous task.
   desc('add_file_upload_controller: FIX', 'FIX')
   def add_file_upload_controller
@@ -862,7 +828,7 @@ end
     end
     insert_into_file "app/controllers/records_controller.rb", :after => "apply_depositor_metadata(@record)\n" do
       "    @record.label = params[:record][:title] # this is a bad hack to work around an AF bug\n" +
-      "    add_posted_blob_to_asset(@record, params[:filedata]) if params.has_key?(:filedata)\n" 
+      "    add_posted_blob_to_asset(@record, params[:filedata]) if params.has_key?(:filedata)\n"
     end
     run_git('Add file uploads to controller')
   end
@@ -880,8 +846,8 @@ end
 
   desc('fix_add_assets_links: FIX', 'FIX')
   def fix_add_assets_links
-    say %Q{ 
-  We'll add a little styling to the Hydra app and add a link to add a new 
+    say %Q{
+  We'll add a little styling to the Hydra app and add a link to add a new
   Record in the header of the layout.\n\n}, STATEMENT
     copy_file "_add_assets_links.html.erb", "app/views/_add_assets_links.html.erb"
     run_git('Add asset links')
@@ -910,7 +876,7 @@ end
   desc('start_everything: FIX', 'FIX')
   def start_everything
     say %Q{
-  Before the tutorial ends, we'll give you a final chance to look 
+  Before the tutorial ends, we'll give you a final chance to look
   at the web application.\n\n}, STATEMENT
     rake 'jetty:stop'
     rake 'jetty:start'
