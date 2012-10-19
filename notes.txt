@@ -1,9 +1,10 @@
 TODO:
   - README: user notes.
   - README: developer notes.
+  - Incorporate enhancements from notes.txt info tutorial.
 
+  - Write method to extract long messages from the tutorial code.
   - Support the --pop option.
-  - Support the --diff option.
   - Implement a --help option.
   - Support control over verbosity, and tie it to :capture declarations.
   - Improve tutorial unit tests.

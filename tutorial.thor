@@ -136,6 +136,7 @@ class HydraTutorial < Thor
     :gems_from_git,  # If true, get a couple of gems directly from github.
     :debug_steps,    # If true, just print task names rather than running tasks.
     :no_git,         # If true, do not create Git commits as the Rails app is modified.
+    :diff,           # If true, run git diff: previous vs. current code.
     :app,            # Name of the Rails application's subdirectory.
 
     # Other config.
@@ -153,7 +154,8 @@ class HydraTutorial < Thor
     :gems_from_git => :boolean,
     :debug_steps   => :boolean,
     :no_git        => :boolean,
-    :app           => :string,
+    :diff          => :boolean,
+    :app           => :string
   )
 
   def main(*requested_tasks)
@@ -164,8 +166,11 @@ class HydraTutorial < Thor
     ts      = HydraTutorial.determine_tasks_to_run(requested_tasks)
     outside = HydraTutorial.outside_tasks
 
-    # inside(@@conf.app) { run 'git diff HEAD^1..HEAD' }
-    # exit
+    # If user requests --diff, just run git diff and exit.
+    if @@conf.diff
+      inside(@@conf.app) { run 'git diff HEAD^1..HEAD' }
+      exit
+    end
 
     # Run tasks.
     ts.each do |t|
@@ -205,6 +210,7 @@ class HydraTutorial < Thor
     @@conf.gems_from_git  = opts[:gems_from_git]
     @@conf.debug_steps    = opts[:debug_steps]
     @@conf.no_git         = opts[:no_git]
+    @@conf.diff           = opts[:diff]
     @@conf.app            = (opts[:app]           || 'hydra_tutorial_app').strip.parameterize('_')
     @@conf.progress_file  = (opts[:progress_file] || '.hydra-tutorial-progress')
     @@conf.done           = nil
@@ -348,11 +354,12 @@ class HydraTutorial < Thor
 
     git diff HEAD^1..HEAD
 
+  Or you can simply run the tutorial with the --diff option.
+
   Alternatively, you can use a tool like Gitx to see the differences
   in the code from one step in the tutorial to the next.
   
-  First, we'll initialize our project's Git repository.\n}, STATEMENT
-
+  First, we'll initialize our project's Git repository.\n\n}, STATEMENT
     run_git('', 'init')
     run_git('Initial commit')
   end
