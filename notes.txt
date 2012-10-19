@@ -1,9 +1,10 @@
 TODO:
-  - Support --no-git option.
-  - Bump version.
   - README: user notes.
   - README: developer notes.
 
+  - Support the --pop option.
+  - Support the --diff option.
+  - Implement a --help option.
   - Support control over verbosity, and tie it to :capture declarations.
   - Improve tutorial unit tests.
   - Improve the views in the tutorial.

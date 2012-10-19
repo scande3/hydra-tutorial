@@ -60,6 +60,7 @@ module HydraTutorialHelpers
   # Takes a commit message an an optional array of git commands.
   # Runs either the given commands or the default commands.
   def run_git(msg, *cmds)
+    return if @@conf.no_git
     cmds = ['add -A', 'commit -m'] if cmds.size == 0
     cmds.each do |cmd|
       cmd += " '#{msg}'" if cmd =~ /^commit/
@@ -128,25 +129,30 @@ class HydraTutorial < Thor
   # Define a Struct that we will use hold some global values we need.
   # An instance of this Struct will be kept in @@conf.
   HTConf = Struct.new(
-    :templates_path,  # Directory where Thor can file source files for copy_file().
-    :quick,           # If true, bypass interactive user confirmations.
-    :run_all,         # If true, run all remaining tasks rather than only the next task.
-    :gems_from_git,   # If true, get a couple of gems directly from github.
-    :reset,           # If true, reset the tutorial back to the beginning.
-    :app_root,        # Name of the Rails application's subdirectory.
-    :debug_steps,     # If true, just print task names rather than running tasks.
-    :progress_file,   # Name of YAML file used to keep track of finished steps.
-    :done             # Array of tasks that have been completed already.
+    # Command-line options.
+    :run_all,        # If true, run all remaining tasks rather than only the next task.
+    :quick,          # If true, bypass interactive user confirmations.
+    :reset,          # If true, reset the tutorial back to the beginning.
+    :gems_from_git,  # If true, get a couple of gems directly from github.
+    :debug_steps,    # If true, just print task names rather than running tasks.
+    :no_git,         # If true, do not create Git commits as the Rails app is modified.
+    :app,            # Name of the Rails application's subdirectory.
+
+    # Other config.
+    :progress_file,  # Name of YAML file used to keep track of finished steps.
+    :done,           # Array of tasks that have been completed already.
+    :templates_path  # Directory where Thor can file source files for copy_file().
   )
 
   # Command-line options for the main() method.
   desc('main: FIX', 'FIX')
   method_options(
+    :run_all       => :boolean,
     :quick         => :boolean,
-    :all           => :boolean,
-    :gems_from_git => :boolean,
     :reset         => :boolean,
+    :gems_from_git => :boolean,
     :debug_steps   => :boolean,
+    :no_git        => :boolean,
     :app           => :string,
   )
 
@@ -169,15 +175,12 @@ class HydraTutorial < Thor
         if outside.include?(t)
           invoke(t, [], {})
         else
-          inside(@@conf.app_root) { invoke(t, [], {}) }
+          inside(@@conf.app) { invoke(t, [], {}) }
         end
       end
       # Persist the fact that the task was run to the YAML progress file.
       @@conf.done << t
-      File.open(@@conf.progress_file, "w") { |f|
-        h = { :app_root => @@conf.app_root, :done => @@conf.done }
-        f.puts(h.to_yaml)
-      }
+      File.open(@@conf.progress_file, "w") { |f| f.puts(@@conf.to_yaml) }
     end
 
     # Inform user if the tutorial is finished.
@@ -193,20 +196,22 @@ class HydraTutorial < Thor
   # Sets up configuration information in the @@conf variable.
   def self.initialize_config(opts)
     @@conf                = HTConf.new
-    @@conf.templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
+    @@conf.run_all        = opts[:run_all]
     @@conf.quick          = opts[:quick]
-    @@conf.run_all        = opts[:all]
-    @@conf.gems_from_git  = opts[:gems_from_git]
     @@conf.reset          = opts[:reset]
-    @@conf.app_root       = opts[:app]
+    @@conf.gems_from_git  = opts[:gems_from_git]
     @@conf.debug_steps    = opts[:debug_steps]
-    @@conf.progress_file  = '.hydra-tutorial-progress'
+    @@conf.no_git         = opts[:no_git]
+    @@conf.app            = (opts[:app]           || 'hydra_tutorial_app').strip.parameterize('_')
+    @@conf.progress_file  = (opts[:progress_file] || '.hydra-tutorial-progress')
     @@conf.done           = nil
+    @@conf.templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
   end
 
   # Initializes the YAML progress file that keeps track of which
   # tutorial tasks have been completed. This needs to occur if
   # the YAML file does not exist yet or if the user requested a reset.
+  # In the latter case, the program exits immediately.
   def self.initialize_progress_file
     return if (File.file?(@@conf.progress_file) and ! @@conf.reset)
     File.open(@@conf.progress_file, "w") { |f|
@@ -216,15 +221,13 @@ class HydraTutorial < Thor
   end
 
   # Loads the progress info from the YAML file, and
-  # sets the corresponding @@conf values.
+  # sets the corresponding @@conf.done value.
   def self.load_progress_info
-    h               = YAML.load_file(@@conf.progress_file) || {}
-    root            = (@@conf.app_root || h[:app_root] || 'hydra_tutorial_app')
-    @@conf.app_root = root.strip.parameterize('_')
-    @@conf.done     = (h[:done] || [])
+    h           = YAML.load_file(@@conf.progress_file) || {}
+    @@conf.done = (h[:done] || [])
   end
 
-  # Takes the array of task names: those requested on the command line
+  # Takes an array of task names: those requested on the command line
   # by the user (typically this list is empty).
   # Returns an arrray of task names: those that the main() taks will invoke.
   def self.determine_tasks_to_run(requested_tasks)
@@ -270,7 +273,7 @@ class HydraTutorial < Thor
 
         https://github.com/projecthydra/hydra-tutorial
 
-    We'll generate a stub application in the #{@@conf.app_root}
+    We'll generate a stub application in the #{@@conf.app}
     folder. You can change that using the --app option.
     }, STATEMENT
   end
@@ -330,22 +333,29 @@ class HydraTutorial < Thor
     say %Q{
   Now we'll create the application.\n}, STATEMENT
 
-    if File.exists? @@conf.app_root
+    if File.exists? @@conf.app
       say %Q{
-    #{@@conf.app_root} already exists. Either remove it or provide
+    #{@@conf.app} already exists. Either remove it or provide
     a different application name using the --app option.}, WARNING
       exit
     end
 
-    run "rails new #{@@conf.app_root}", :capture => true
+    run "rails new #{@@conf.app}", :capture => true
   end
 
   desc('git_initial_commit: FIX', 'FIX')
   def git_initial_commit
     say %Q{
   We will keep track of our work using Git so that you can see how
-  the files in the project change from one step to the next.
+  the files in the project change from one step to the next. To see
+  the difference you can open a terminal in the Rails application
+  directory and run the following Git command.
 
+    git diff HEAD^1..HEAD
+
+  Alternatively, you can use a tool like Gitx to see the differences
+  in the code from one step in the tutorial to the next.
+  
   First, we'll initialize our project's Git repository.\n}, STATEMENT
 
     run_git('', 'init')
