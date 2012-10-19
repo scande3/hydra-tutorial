@@ -10,10 +10,16 @@ require 'fileutils'
 require 'yaml'
 require 'set'
 
+# Colors used in messages to the user.
 STATEMENT = Thor::Shell::Color::YELLOW
 QUESTION  = Thor::Shell::Color::GREEN
 WAIT      = Thor::Shell::Color::CYAN
 WARNING   = Thor::Shell::Color::RED
+
+
+####
+# Some utility methods used by the tutorial.
+####
 
 module HydraTutorialHelpers
 
@@ -56,34 +62,40 @@ module HydraTutorialHelpers
 
 end
 
+
+####
+# The tutorial contains the following major components:
+#
+#   - A couple of class methods to define the steps in the tutorial.
+#     Each step is a Thor task.
+#
+#   - A main() task. This is the task invoked when the user runs
+#     the bin/hydra-tutorial script. It's job is to determine
+#     the which steps to run (either the next step in the process
+#     or the specific steps requested on the command line). As
+#     the main() task invokes those other tasks, it also persists
+#     information to a YAML file to keep track of the user's
+#     progress through the tutorial.
+#
+#   - The other tasks: these are the steps in the tutorial, defined
+#     in the order that they should be run.
+#
+####
+
 class HydraTutorial < Thor
 
   include Thor::Actions
   include Rails::Generators::Actions
   include HydraTutorialHelpers
 
-  HTConf = Struct.new(
-    :templates_path,
-    :quick,
-    :run_all,
-    :gems_from_git,
-    :reset,
-    :app_root,
-    :debug_steps,
-    :progress_file,
-    :done
-  )
+  # Returns an array of task names for the tasks that
+  # constituting the steps in the tutorial.
+  def self.tutorial_tasks
+    return tasks.keys.reject { |t| t == 'main' }
+  end
 
-  desc('main: FIX', 'FIX')
-  method_options(
-    :quick         => :boolean,
-    :all           => :boolean,
-    :gems_from_git => :boolean,
-    :reset         => :boolean,
-    :debug_steps   => :boolean,
-    :app           => :string,
-  )
-
+  # Returns a set of task names for the tasks that should not
+  # be run inside the Rails application directory.
   def self.outside_tasks
     return Set.new(%w(
       welcome
@@ -93,10 +105,8 @@ class HydraTutorial < Thor
     ))
   end
 
-  def self.tutorial_tasks
-    return tasks.keys.reject { |t| t == 'main' }
-  end
-
+  # Returns array of directory paths used by Thor to find
+  # source files when running copy_file().
   def self.source_paths
     [@@conf.templates_path]
   end
@@ -107,6 +117,31 @@ class HydraTutorial < Thor
   # This task invokes either the next task in the tutorial or
   # the task(s) explicitly requested by the user.
   ####
+
+  # Define a Struct that we will use hold some global values we need.
+  # An instance of this Struct will be kept in @@conf.
+  HTConf = Struct.new(
+    :templates_path,  # Directory where Thor can file source files for copy_file().
+    :quick,           # If true, bypass interactive user confirmations.
+    :run_all,         # If true, run all remaining tasks rather than only the next task.
+    :gems_from_git,   # If true, get a couple of gems directly from github.
+    :reset,           # If true, reset the tutorial back to the beginning.
+    :app_root,        # Name of the Rails application's subdirectory.
+    :debug_steps,     # If true, just print task names rather than running tasks.
+    :progress_file,   # Name of YAML file used to keep track of finished steps.
+    :done             # Array of tasks that have been completed already.
+  )
+
+  # Command-line options for the main() method.
+  desc('main: FIX', 'FIX')
+  method_options(
+    :quick         => :boolean,
+    :all           => :boolean,
+    :gems_from_git => :boolean,
+    :reset         => :boolean,
+    :debug_steps   => :boolean,
+    :app           => :string,
+  )
 
   def main(*requested_tasks)
     # Setup.
@@ -148,6 +183,7 @@ class HydraTutorial < Thor
     run("cat #{@@conf.progress_file}", :verbose => false) if @@conf.debug_steps
   end
 
+  # Sets up configuration information in the @@conf variable.
   def self.initialize_config(opts)
     @@conf                = HTConf.new
     @@conf.templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
@@ -161,30 +197,41 @@ class HydraTutorial < Thor
     @@conf.done           = nil
   end
 
+  # Initializes the YAML progress file that keeps track of which
+  # tutorial tasks have been completed. This needs to occur if
+  # the YAML file does not exist yet or if the user requested a reset.
   def self.initialize_progress_file
     return if (File.file?(@@conf.progress_file) and ! @@conf.reset)
     File.open(@@conf.progress_file, "w") { |f|
-      f.puts("---\n")
+      f.puts("---\n")    # Empty YAML file.
     }
     exit if @@conf.reset
   end
 
+  # Loads the progress info from the YAML file, and
+  # sets the corresponding @@conf values.
   def self.load_progress_info
-    # Load progress info from YAML, and set defaults as needed.
-    # Set some @@conf values.
     h               = YAML.load_file(@@conf.progress_file) || {}
     root            = (@@conf.app_root || h[:app_root] || 'hydra_tutorial_app')
     @@conf.app_root = root.strip.parameterize('_')
     @@conf.done     = (h[:done] || [])
   end
 
+  # Takes the array of task names: those requested on the command line
+  # by the user (typically this list is empty).
+  # Returns an arrray of task names: those that the main() taks will invoke.
   def self.determine_tasks_to_run(requested_tasks)
     if requested_tasks.size == 0
+      # User did not request any tasks, so we determine which tasks
+      # have not been done yet. We either return all of those tasks
+      # or, more commonly, just the next text.
       done = Set.new(@@conf.done)
       ts   = tutorial_tasks.reject { |t| done.include?(t) }
       ts   = [ts.first] unless (@@conf.run_all or ts == [])
       return ts
     else
+      # User requested particular tasks, so we will simply return
+      # them, provided that they are valid task names.
       valid = Set.new(tutorial_tasks)
       requested_tasks.each { |rt|
         abort "Invalid task name: #{rt}." unless valid.include?(rt)
@@ -195,7 +242,8 @@ class HydraTutorial < Thor
 
 
   ####
-  # Steps in the tutorial.
+  # The remaining methods represent the steps in the tutorial.
+  # The tasks should be defined in the order they should run.
   ####
 
   desc('welcome: FIX', 'FIX')
@@ -260,7 +308,6 @@ class HydraTutorial < Thor
     continue_prompt
 
     end
-
   end
 
   desc('install_bundler_and_rails: FIX', 'FIX')
@@ -686,11 +733,6 @@ include Hydra::Solr::Document
     rails_server('/records/new')
   end
 
-  desc('foobar: FIX', 'FIX')
-  def foobar
-  end
-
-
   desc('install_rspec: FIX', 'FIX')
   def install_rspec
     say %Q{
@@ -766,7 +808,6 @@ include Hydra::Solr::Document
     rake 'jetty:start'
   end
 
-  # TODO: is this important in a hydra tutorial?
   desc('add_coverage_stats: FIX', 'FIX')
   def add_coverage_stats
     say %Q{
@@ -891,5 +932,10 @@ end
   end
 
 end
+
+
+####
+#
+####
 
 HydraTutorial.start

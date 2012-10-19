@@ -1,4 +1,6 @@
 #! /usr/bin/env ruby
 
+# Invokes the tutorial's main() task.
+
 tutorial = File.join(File.dirname(__FILE__), '..', 'tutorial.thor')
 exec(tutorial, 'main', *ARGV)
