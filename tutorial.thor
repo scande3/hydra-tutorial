@@ -27,6 +27,7 @@ module HydraTutorialHelpers
 
   # Runs the Rails console for the user.
   def rails_console
+    return if @@conf.quick
     say %Q{
   We'll launch the console again. Give some of those commands a try.\n}, STATEMENT
     say %Q{
@@ -366,7 +367,6 @@ class HydraTutorial < Thor
 
   desc('out_of_the_box: FIX', 'FIX')
   def out_of_the_box
-    return if @@conf.quick
     say %Q{
   Here's a chance to look around. You can see the structure of
   a Rails application. In particular, look at:
@@ -377,7 +377,6 @@ class HydraTutorial < Thor
 
   If we launched the Rails application server, we can see the application
   running in the browser and you can see if everything is working.\n}, STATEMENT
-
     rails_server
   end
 
@@ -501,7 +500,7 @@ class HydraTutorial < Thor
 
     ## DELETE
     > obj.delete\n}, STATEMENT
-    rails_console unless @@conf.quick
+    rails_console
   end
 
   desc('enhance_model_with_om_descmd: FIX', 'FIX')
@@ -527,7 +526,7 @@ class HydraTutorial < Thor
     > obj.save
     > obj.descMetadata.content
     # => An XML document with the title "My object title"\n}, STATEMENT
-    rails_console unless @@conf.quick
+    rails_console
   end
 
   desc('use_the_delegate_method: FIX', 'FIX')
@@ -576,7 +575,7 @@ class HydraTutorial < Thor
     > obj.save
     > obj.descMetadata.content
     # => A MODS XML document\n}, STATEMENT
-    rails_console unless @@conf.quick
+    rails_console
   end
 
   desc('record_generator: FIX', 'FIX')
