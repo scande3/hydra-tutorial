@@ -129,6 +129,7 @@ class HydraTutorial < Thor
       # [ true,  'add_datastream_and_terminology' ],
       [ true,  'start_everything' ],
       [ true,  'stop_jetty' ],
+      [ true,  'foobar' ],
     ]
   end
 
@@ -692,9 +693,6 @@ include Hydra::Solr::Document
     run_git('Modify controller and model to include access rights')
   end
 
-  # BUG in hydra-head: hydra-file-access/app/views/_user_util_links.html.erb.
-  #                    Remove reference to folder_index_path().
-  #                    Fix was merged into hydra-head, but not released yet [?].
   desc('check_catalog: FIX', 'FIX')
   def check_catalog
     say %Q{
@@ -706,8 +704,19 @@ include Hydra::Solr::Document
   Create some new objects, and then check out the search catalog at:
 
       http://localhost:3000/catalog\n}, STATEMENT
+
+    # TODO: remove this monkey-patch fixing a bug in hydra-head.
+    f = `bundle show hydra-head`
+    f = "#{f.strip}/app/views/_user_util_links.html.erb"
+    gsub_file f, /.+folder_index_path.+/, ''
+
     rails_server('/records/new') unless @@conf.quick
   end
+
+  desc('foobar: FIX', 'FIX')
+  def foobar
+  end
+
 
   desc('install_rspec: FIX', 'FIX')
   def install_rspec
