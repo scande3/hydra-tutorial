@@ -576,8 +576,14 @@ class HydraTutorial < Thor
     say %Q{
  The scaffold just provided the basic outline for an application, so 
  we need to provide the guts for the web form. Here's a simple one:\n\n}, STATEMENT
-    copy_file "_form.wiring_it_into_rails.html.erb", "app/views/records/_form.html.erb"
-    copy_file "show.html.erb", "app/views/records/show.html.erb"
+    files = [
+      ["_form.wiring_it_into_rails.html.erb", "app/views/records/_form.html.erb"],
+      ["show.html.erb",                       "app/views/records/show.html.erb"],
+    ]
+    files.each do |src, dst|
+      remove_file dst
+      copy_file src, dst
+    end
     run_git('Fleshed out the edit form and show page')
   end
 
