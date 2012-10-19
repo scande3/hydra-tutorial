@@ -1,8 +1,8 @@
 TODO:
-  - README: user notes.
-  - README: developer notes.
   - Incorporate enhancements from notes.txt info tutorial.
 
+  - Improve README.
+  - Remove monkey-patch to hydra-head.
   - Write method to extract long messages from the tutorial code.
   - Support the --pop option.
   - Implement a --help option.
@@ -10,7 +10,7 @@ TODO:
   - Improve tutorial unit tests.
   - Improve the views in the tutorial.
   - Write unit tests for the tutorial script itself.
-  - Wrate an integration test for the entire tutorial.
+  - Write an integration test for the entire tutorial.
 
 
 ====================================================================
