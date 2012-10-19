@@ -107,29 +107,26 @@ class HydraTutorial < Thor
       [ true,  'check_the_new_form' ],
       [ true,  'add_hydra_gems' ],
       [ true,  'run_hydra_generators' ],
-    ]
-    to_do = [
       [ true,  'db_migrate' ],
-      [ true,  'hydra_jetty_conf' ],
-      [ true,  'do_it' ],
-      [ true,  'look_at_it' ],
+      [ true,  'hydra_jetty_config' ],
+      [ true,  'add_access_rights' ],
+      [ true,  'check_catalog' ],
       [ true,  'install_rspec' ],
-      [ true,  'write_our_first_test' ],
-      [ true,  'a_model_test' ],
+      [ true,  'write_model_test' ],
+      [ true,  'write_controller_test' ],
       [ true,  'install_capybara' ],
-      [ true,  'an_integration_test' ],
-      [ true,  'run_tests_x3' ],
+      [ true,  'write_integration_test' ],
+      [ true,  'run_integration_test_fail' ],
       [ true,  'add_jettywrapper_ci_task' ],
       [ true,  'add_coverage_stats' ],
-      [ true,  'coverage_prompt' ],
       [ true,  'add_file_uploads' ],
       [ true,  'add_file_upload_controller' ],
       [ true,  'add_file_upload_ui' ],
       [ true,  'fix_add_assets_links' ],
-      [ true,  'add_collection_model' ],
-      [ true,  'add_collection_controller' ],
-      [ true,  'add_collection_reference_to_record' ],
-      [ true,  'add_datastream_and_terminology' ],
+      # [ true,  'add_collection_model' ],
+      # [ true,  'add_collection_controller' ],
+      # [ true,  'add_collection_reference_to_record' ],
+      # [ true,  'add_datastream_and_terminology' ],
       [ true,  'start_everything' ],
       [ true,  'stop_jetty' ],
     ]
@@ -373,7 +370,7 @@ class HydraTutorial < Thor
     unless File.exists? 'jetty'
       run 'cp -R ../jetty jetty'
     end
-    append_to_file '.gitignore', "\njetty"
+    append_to_file '.gitignore', "\njetty\n"
     run_git('Added jetty to project and git-ignored it')
   end
 
@@ -639,29 +636,28 @@ class HydraTutorial < Thor
   def db_migrate
     say %Q{
   Blacklight uses a SQL database for keeping track of user bookmarks, 
-  searches, etc. We'll run the migrations next:
-    }, STATEMENT
+  searches, etc. We'll run the migrations next:\n\n}, STATEMENT
     rake 'db:migrate'
     rake 'db:test:prepare'
+    run_git('Ran db:migrate, which created db/schema.rb')
   end
 
-  desc('hydra_jetty_conf: FIX', 'FIX')
-  def hydra_jetty_conf
+  desc('hydra_jetty_config: FIX', 'FIX')
+  def hydra_jetty_config
     say %Q{
-  Hydra provides some configuration for Solr and Fedora. Use them.
-    }, STATEMENT
+  Hydra provides some configuration for Solr and Fedora. Use them.\n}, STATEMENT
     rake 'jetty:stop'
     rake 'hydra:jetty:config'
     rake 'jetty:start'
   end
 
-  desc('do_it: FIX', 'FIX')
-  def do_it
-
+  desc('add_access_rights: FIX', 'FIX')
+  def add_access_rights
     say %Q{
   We need to make a couple changes to our controller and model to make 
   them fully-compliant objects by teaching them about access rights.
-    }, STATEMENT
+      
+  We'll also update our controller to provide access controls on records.\n\n}, STATEMENT
 
     inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
       "  include Hydra::AssetsControllerHelper\n"
@@ -683,22 +679,24 @@ include Hydra::ModelMethods
 include Hydra::Solr::Document
       "
     end
+
     insert_into_file "app/assets/javascripts/application.js", :after => "//= require_tree .\n" do
       "Blacklight.do_search_context_behavior = function() { }\n"
     end
-    say %Q{
-  We'll also update our controller to provide access controls on records.
-    }
 
     inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
       "  include Hydra::AccessControlsEnforcement\n" +
       "  before_filter :enforce_access_controls\n"
     end
 
+    run_git('Modify controller and model to include access rights')
   end
 
-  desc('look_at_it: FIX', 'FIX')
-  def look_at_it
+  # BUG in hydra-head: hydra-file-access/app/views/_user_util_links.html.erb.
+  #                    Remove reference to folder_index_path().
+  #                    Fix was merged into hydra-head, but not released yet [?].
+  desc('check_catalog: FIX', 'FIX')
+  def check_catalog
     say %Q{
   Blacklight and Hydra-Head have added some new functionality to the 
   application. We can now look at a search interface (provided 
@@ -707,10 +705,7 @@ include Hydra::Solr::Document
 
   Create some new objects, and then check out the search catalog at:
 
-     http://localhost:3000/catalog
-
-    }, STATEMENT
-
+      http://localhost:3000/catalog\n}, STATEMENT
     rails_server('/records/new') unless @@conf.quick
   end
 
@@ -719,61 +714,60 @@ include Hydra::Solr::Document
     say %Q{
   One of the great things about the Rails framework is the strong
   testing ethic. We'll use rspec to write a couple tests for 
-  this application.
-    }, STATEMENT
+  this application.\n\n}, STATEMENT
     gem_group :development, :test do
       gem 'rspec'
       gem 'rspec-rails'
     end
-    run 'bundle install'
-
+    run 'bundle install', :capture => true
     generate 'rspec:install'
+    run_git('Added rspec to project')
   end
   
-  desc('write_our_first_test: FIX', 'FIX')
-  def write_our_first_test
-    say %Q{
-  Here's a quick example of a test.
-    }
-    copy_file 'records_controller_spec.rb', 'spec/controllers/records_controller_spec.rb'
+  # TODO: write the test.
+  desc('write_model_test: FIX', 'FIX')
+  def write_model_test
+    # copy_file 'record_test.rb', 'spec/models/record_test.rb'
+    # run_git('Added a model test')
     run 'rspec'
   end
 
-  desc('a_model_test: FIX', 'FIX')
-  def a_model_test
- #   copy_file 'record_test.rb', 'spec/models/record_test.rb'
-    #run 'rspec'
+  # TODO: this test should do something.
+  desc('write_controller_test: FIX', 'FIX')
+  def write_controller_test
+    say %Q{
+  Here's a quick example of a test.\n\n}
+    copy_file 'records_controller_spec.rb', 'spec/controllers/records_controller_spec.rb'
+    run_git('Added a controller test')
+    run 'rspec'
   end
 
   desc('install_capybara: FIX', 'FIX')
   def install_capybara
     say %Q{ 
   We also want to write integration tests to test the end-result that
-  a user may see. We'll add the capybara gem to do that.
-    }, STATEMENT
+  a user may see. We'll add the capybara gem to do that.\n\n}, STATEMENT
     gem_group :development, :test do
       gem 'capybara'
     end
-    run 'bundle install'
-   # inject_into_file 'spec/spec_helper.rb' do
-   #   "  require 'capybara/rails'\n"
-   # end
+    run 'bundle install', :cature => true
+    run_git('Added capybara gem')
   end
 
-  desc('an_integration_test: FIX', 'FIX')
-  def an_integration_test
+  desc('write_integration_test: FIX', 'FIX')
+  def write_integration_test
     say %Q{
-  Here's a quick integration test that proves deposit works.
-    }, STATEMENT
+  Here's a quick integration test that proves deposit works.\n}, STATEMENT
     copy_file 'integration_spec.rb', 'spec/integration/integration_spec.rb'
+    run_git('Added an integration test')
   end
 
-  desc('run_tests_x3: FIX', 'FIX')
-  def run_tests_x3
+  # TODO: this did not fail.
+  desc('run_integration_test_fail: FIX', 'FIX')
+  def run_integration_test_fail
     say %Q{
     Now that the integration spec is in place, when we try to run rspec,
-    we'll get a test failure because it can't connect to Fedora.
-    }, STATEMENT
+    we'll get a test failure because it can't connect to Fedora.\n}, STATEMENT
     run 'rspec'
   end
 
@@ -782,28 +776,29 @@ include Hydra::Solr::Document
     say %Q{
     Instead, we need to add a new Rake task that knows how to wrap the 
     test suite --  start jetty before running the tests and stop jetty
-    at the end. We can use a feature provided by jettywrapper to do this.
-    }, STATEMENT
+    at the end. We can use a feature provided by jettywrapper to do this.\n\n}, STATEMENT
     copy_file 'ci.rake', 'lib/tasks/ci.rake'
-
+    run_git('Added ci task')
     rake 'jetty:stop'
     rake 'ci'
     rake 'jetty:start'
   end
 
+  # TODO: is this important in a hydra tutorial?
   desc('add_coverage_stats: FIX', 'FIX')
   def add_coverage_stats
     say %Q{
-    Now that we have tests, we also want to have some coverage statistics.
-    }, STATEMENT
+    Now that we have tests, we also want to have some coverage statistics.\n}, STATEMENT
 
     gem_group :development, :test do
       gem 'simplecov'
     end
+    run 'bundle install', :capture => true
 
-    run 'bundle install'
+    f = 'lib/tasks/ci.rake'
+    remove_file f
+    copy_file 'ci_with_coverage.rake', f
 
-    copy_file 'ci_with_coverage.rake', 'lib/tasks/ci.rake'
     insert_into_file "spec/spec_helper.rb", :after => "ENV[\"RAILS_ENV\"] ||= 'test'\n"do
       %Q{
 if ENV['COVERAGE'] == "true"
@@ -816,17 +811,16 @@ end
       }
     end
 
+    append_to_file '.gitignore', "\ncoverage\n"
+    run_git('Added simplecov')
+
     rake 'jetty:stop'
     rake 'ci'
     rake 'jetty:start'
-  end
 
-  desc('coverage_prompt: FIX', 'FIX')
-  def coverage_prompt
     say %Q{
-    Go take a look at the coverage report, open the file ./coverage/index.html
-    in your browser.
-    }, STATEMENT
+    Go take a look at the coverage report, open the file coverage/index.html
+    in your browser.\n}, STATEMENT
     continue_prompt
   end
 
@@ -835,18 +829,18 @@ end
     say %Q{ 
   Now that we have a basic Hydra application working with metadata-only, we
   want to enhance that with the ability to upload files. Let's add a new 
-  datastream to our model.
-    }, STATEMENT
+  datastream to our model.\n\n}, STATEMENT
     inject_into_class 'app/models/record.rb', 'Record' do
       "has_file_datastream :name => 'content', :type => ActiveFedora::Datastream\n"
     end
+    run_git('Add file uploads to model')
   end
   
+  # TODO: combine with previous task.
   desc('add_file_upload_controller: FIX', 'FIX')
   def add_file_upload_controller
     say %Q{
-  And educate our controller for managing file objects.
-    }, STATEMENT
+  And educate our controller for managing file objects.\n\n}, STATEMENT
     inject_into_class "app/controllers/records_controller.rb", "RecordsController" do
       "    include Hydra::Controller::UploadBehavior\n"
     end
@@ -854,51 +848,54 @@ end
       "    @record.label = params[:record][:title] # this is a bad hack to work around an AF bug\n" +
       "    add_posted_blob_to_asset(@record, params[:filedata]) if params.has_key?(:filedata)\n" 
     end
+    run_git('Add file uploads to controller')
   end
 
+  # TODO: combine with previous task.
   desc('add_file_upload_ui: FIX', 'FIX')
   def add_file_upload_ui
     say %Q{
-  And add a file upload field on the form.
-    }, STATEMENT
-    copy_file "_form.html.erb", "app/views/records/_form.html.erb"
+  And add a file upload field on the form.\n}, STATEMENT
+    f = "app/views/records/_form.html.erb"
+    remove_file f
+    copy_file "_form.add_file_upload.html.erb", f
+    run_git('Add file uploads to UI')
   end
 
   desc('fix_add_assets_links: FIX', 'FIX')
   def fix_add_assets_links
     say %Q{ 
   We'll add a little styling to the Hydra app and add a link to add a new 
-  Record in the header of the layout.
-    }, STATEMENT
+  Record in the header of the layout.\n\n}, STATEMENT
     copy_file "_add_assets_links.html.erb", "app/views/_add_assets_links.html.erb"
+    run_git('Add asset links')
   end
 
-  desc('add_collection_model: FIX', 'FIX')
-  def add_collection_model
-    # TODO
-  end
+  # # TODO
+  # desc('add_collection_model: FIX', 'FIX')
+  # def add_collection_model
+  # end
 
-  desc('add_collection_controller: FIX', 'FIX')
-  def add_collection_controller
-    # TODO
-  end
+  # # TODO
+  # desc('add_collection_controller: FIX', 'FIX')
+  # def add_collection_controller
+  # end
 
-  desc('add_collection_reference_to_record: FIX', 'FIX')
-  def add_collection_reference_to_record
-    # TODO
-  end
+  # # TODO
+  # desc('add_collection_reference_to_record: FIX', 'FIX')
+  # def add_collection_reference_to_record
+  # end
 
-  desc('add_datastream_and_terminology: FIX', 'FIX')
-  def add_datastream_and_terminology
-    # TODO
-  end
+  # # TODO
+  # desc('add_datastream_and_terminology: FIX', 'FIX')
+  # def add_datastream_and_terminology
+  # end
 
   desc('start_everything: FIX', 'FIX')
   def start_everything
     say %Q{
-  This is the end of the tutorial. We'll give you a final chance to look 
-  at the web application.
-    }, STATEMENT
+  Before the tutorial ends, we'll give you a final chance to look 
+  at the web application.\n\n}, STATEMENT
     rake 'jetty:stop'
     rake 'jetty:start'
     rails_server
@@ -906,6 +903,8 @@ end
 
   desc('stop_jetty: FIX', 'FIX')
   def stop_jetty
+    say %Q{
+  This is the end of the tutorial. We'll shut down the jetty server.\n}, STATEMENT
     rake 'jetty:stop'
   end
 
