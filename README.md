@@ -101,5 +101,5 @@ You can run the entire tutorial non-interactively from the root of the Git
 project checkout:
 
 ```bash
-$ hydra-tutorial --run-all --quick
+$ bin/hydra-tutorial --run-all --quick
 ```

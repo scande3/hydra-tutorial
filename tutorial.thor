@@ -65,7 +65,7 @@ module HydraTutorialHelpers
     cmds = ['add -A', 'commit -m'] if cmds.size == 0
     cmds.each do |cmd|
       cmd += " '#{msg}'" if cmd =~ /^commit/
-      run "git #{cmd}", :capture => true
+      run "git #{cmd}", :capture => false
     end
   end
 
@@ -327,7 +327,7 @@ class HydraTutorial < Thor
     say %Q{
   We're going to install some prerequisite gems in order to create our
   skeleton Rails application.\n}, STATEMENT
-    run 'gem install bundler rails', :capture => true
+    run 'gem install bundler rails', :capture => false
   end
 
   desc('new_rails_app: FIX', 'FIX')
@@ -342,7 +342,7 @@ class HydraTutorial < Thor
       exit
     end
 
-    run "rails new #{@@conf.app}", :capture => true
+    run "rails new #{@@conf.app}", :capture => false
   end
 
   desc('git_initial_commit: FIX', 'FIX')
@@ -420,7 +420,7 @@ class HydraTutorial < Thor
   Add the 'jettywrapper' gem, which adds Rake tasks to start and stop Jetty.\n}, STATEMENT
 
     gem 'jettywrapper'
-    run 'bundle install', :capture => true
+    run 'bundle install', :capture => false
     run_git('Solr and Fedora configuration')
 
     say %Q{
@@ -459,7 +459,7 @@ class HydraTutorial < Thor
   We'll add both of these to the Gemfile.\n\n}, STATEMENT
     gem 'active-fedora'
     gem 'om'
-    run 'bundle install', :capture => true
+    run 'bundle install', :capture => false
     run_git('Added gems: active-fedora and om')
   end
 
@@ -653,7 +653,7 @@ class HydraTutorial < Thor
       gem 'hydra-head', ">= 4.1.1"
     end
     gem 'devise'
-    run 'bundle install', :capture => true
+    run 'bundle install', :capture => false
     run_git('Added gems: blacklight, hydra-head, devise')
   end
 
@@ -761,7 +761,7 @@ include Hydra::Solr::Document
       gem 'rspec'
       gem 'rspec-rails'
     end
-    run 'bundle install', :capture => true
+    run 'bundle install', :capture => false
     generate 'rspec:install'
     run_git('Added rspec to project')
   end
@@ -804,7 +804,6 @@ include Hydra::Solr::Document
     run_git('Added an integration test')
   end
 
-  # TODO: this did not fail.
   desc('run_integration_test_fail: FIX', 'FIX')
   def run_integration_test_fail
     say %Q{
@@ -834,7 +833,7 @@ include Hydra::Solr::Document
     gem_group :development, :test do
       gem 'simplecov'
     end
-    run 'bundle install', :capture => true
+    run 'bundle install', :capture => false
 
     f = 'lib/tasks/ci.rake'
     remove_file f
