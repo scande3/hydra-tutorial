@@ -1,3 +1,18 @@
+TODO:
+  - Support --no-git option.
+  - Bump version.
+  - README: user notes.
+  - README: developer notes.
+
+  - Support control over verbosity, and tie it to :capture declarations.
+  - Improve tutorial unit tests.
+  - Improve the views in the tutorial.
+  - Write unit tests for the tutorial script itself.
+  - Wrate an integration test for the entire tutorial.
+
+
+====================================================================
+
 # Install a version of Ruby.
 
 # Install RVM.

@@ -25,21 +25,7 @@ module HydraTutorialHelpers
 
   @@conf = nil
 
-  def run_git(msg, *cmds)
-    cmds = ['add -A', 'commit -m'] if cmds.size == 0
-    cmds.each do |cmd|
-      cmd += " '#{msg}'" if cmd =~ /^commit/
-      run "git #{cmd}", :capture => true
-    end
-  end
-
-  def continue_prompt
-    return if @@conf.quick
-    return unless @@conf.run_all
-    ask %Q{
-  HIT <ENTER> KEY TO CONTINUE}, WAIT
-  end
-
+  # Runs the Rails console for the user.
   def rails_console
     say %Q{
   We'll launch the console again. Give some of those commands a try.\n}, STATEMENT
@@ -48,6 +34,8 @@ module HydraTutorialHelpers
     run "rails c"
   end
 
+  # Runs the Rails server for the user, optionally
+  # directing their attention to a particular URL.
   def rails_server url = '/'
     return if @@conf.quick
     say %Q{
@@ -58,6 +46,25 @@ module HydraTutorialHelpers
     say %Q{
   Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.\n}, WAIT
     run "rails s"
+  end
+
+  # Offers the user a continue prompt. This is relevant only if
+  # the user is running all steps at once rather than one by one.
+  def continue_prompt
+    return if @@conf.quick
+    return unless @@conf.run_all
+    ask %Q{
+  HIT <ENTER> KEY TO CONTINUE}, WAIT
+  end
+
+  # Takes a commit message an an optional array of git commands.
+  # Runs either the given commands or the default commands.
+  def run_git(msg, *cmds)
+    cmds = ['add -A', 'commit -m'] if cmds.size == 0
+    cmds.each do |cmd|
+      cmd += " '#{msg}'" if cmd =~ /^commit/
+      run "git #{cmd}", :capture => true
+    end
   end
 
 end
