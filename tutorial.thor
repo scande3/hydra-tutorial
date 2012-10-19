@@ -164,6 +164,9 @@ class HydraTutorial < Thor
     ts      = HydraTutorial.determine_tasks_to_run(requested_tasks)
     outside = HydraTutorial.outside_tasks
 
+    # inside(@@conf.app) { run 'git diff HEAD^1..HEAD' }
+    # exit
+
     # Run tasks.
     ts.each do |t|
       # Either print the task that would be run (in debug mode) or run the task.
@@ -259,23 +262,22 @@ class HydraTutorial < Thor
   desc('welcome: FIX', 'FIX')
   def welcome
     say %Q{
-    Welcome to this Hydra tutorial. We're going to step through building a
-    working Hydra application. We'll build the application gradually, starting
-    by building our "business logic", wiring in HTML views, and then
-    connecting it to our Rails application.
+  Welcome to this Hydra tutorial. We're going to step through building a
+  working Hydra application. We'll build the application gradually, starting
+  by building our "business logic", wiring in HTML views, and then
+  connecting it to our Rails application.
 
-    At several points in this tutorial, as we iteratively develop our files,
-    you may be prompted to review conflicts between versions of files. It is
-    safe to blindly accept the changes ('y'), however you may wish to view
-    the diff ('d') to see the things we're change.
+  At several points in this tutorial, as we iteratively develop our files,
+  you may be prompted to review conflicts between versions of files. It is
+  safe to blindly accept the changes ('y'), however you may wish to view
+  the diff ('d') to see the things we're change.
 
-    This tutorial, a README file, and our bug tracker are at:
+  This tutorial, a README file, and our bug tracker are at:
 
-        https://github.com/projecthydra/hydra-tutorial
+      https://github.com/projecthydra/hydra-tutorial
 
-    We'll generate a stub application in the #{@@conf.app}
-    folder. You can change that using the --app option.
-    }, STATEMENT
+  We'll generate a stub application in the #{@@conf.app}
+  folder. You can change that using the --app option.\n}, STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
@@ -285,25 +287,20 @@ class HydraTutorial < Thor
   Obviously, if you can run this tutorial, you have already installed ruby.
     }, STATEMENT
 
-
     ruby_executable = run 'which ruby', :capture => true, :verbose => false
     ruby_executable.strip!
 
     say %Q{
   You are running this using:
 
-      #{ruby_executable}
-    }, STATEMENT
+      #{ruby_executable}}, STATEMENT
 
     if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/
       say %Q{
   It looks like you're using rvm/rbenv/etc. We'll use
-  this environment to build the application.
-    }, STATEMENT
-
+  this environment to build the application.\n}, STATEMENT
     else
-
-    say %Q{
+      say %Q{
   We checked, and it looks like you might be using a system-wide ruby.
   We suggest you use somethng like rvm [1], rbenv [2], etc to manage
   your ruby projects.
@@ -312,11 +309,9 @@ class HydraTutorial < Thor
   ruby managers, which may make your life easier.
 
   [1] http://rvm.io/
-  [2] https://github.com/sstephenson/rbenv/
-    }, WARNING
+  [2] https://github.com/sstephenson/rbenv/\n}, WARNING
 
-    continue_prompt
-
+      continue_prompt
     end
   end
 
@@ -477,28 +472,28 @@ class HydraTutorial < Thor
   launch the Rails interactive console (`rails c`), we can create
   and manipulate our object:
 
-      ## CREATE
-      > obj = Record.new
-      # => #<Record:1571331701243443635 @pid="__DO_NOT_USE__" >
-      > obj.descMetadata.content = e.g. '<my_xml_content />'
-      > obj.save
+    ## CREATE
+    > obj = Record.new
+    # => #<Record:1571331701243443635 @pid="__DO_NOT_USE__" >
+    > obj.descMetadata.content = e.g. '<my_xml_content />'
+    > obj.save
 
-      > obj.pid
-      # => e.g. 'changeme:1'
+    > obj.pid
+    # => e.g. 'changeme:1'
 
-      ## RETRIEVE
-      > obj = Record.find('changeme:1')
-      > ds = obj.descMetadata
-      # => #<ActiveFedora::NokogiriDatastream:3283711306477137919 ...>
-      > ds.content
-      # => (should be the XML document you added before)
+    ## RETRIEVE
+    > obj = Record.find('changeme:1')
+    > ds = obj.descMetadata
+    # => #<ActiveFedora::NokogiriDatastream:3283711306477137919 ...>
+    > ds.content
+    # => (should be the XML document you added before)
 
-      ## UPDATE
-      # manipulating XML:
-      > ds.ng_xml.xpath('//my_xml_content')
+    ## UPDATE
+    # manipulating XML:
+    > ds.ng_xml.xpath('//my_xml_content')
 
-      ## DELETE
-      > obj.delete\n}, STATEMENT
+    ## DELETE
+    > obj.delete\n}, STATEMENT
     rails_console unless @@conf.quick
   end
 
@@ -520,11 +515,11 @@ class HydraTutorial < Thor
   If you launch the Rails interactive console, we can now create and
   manipulate our object using methods provided by OM.
 
-      > obj = Record.new
-      > obj.descMetadata.title = "My object title"
-      > obj.save
-      > obj.descMetadata.content
-      # => An XML document with the title "My object title"\n}, STATEMENT
+    > obj = Record.new
+    > obj.descMetadata.title = "My object title"
+    > obj.save
+    > obj.descMetadata.content
+    # => An XML document with the title "My object title"\n}, STATEMENT
     rails_console unless @@conf.quick
   end
 
@@ -534,11 +529,11 @@ class HydraTutorial < Thor
   We can use the #delegate method to tell the model-object how
   to access these attributes.
 
-      > obj = Record.new
-      > obj.title = "My object title"
-      > obj.save
-      > obj.descMetadata.content
-      # => An XML document with the title "My object title"\n\n}, STATEMENT
+    > obj = Record.new
+    > obj.title = "My object title"
+    > obj.save
+    > obj.descMetadata.content
+    # => An XML document with the title "My object title"\n\n}, STATEMENT
 
     loc = 'has_metadata :name => "descMetadata", :type => DatastreamMetadata\n'
     insert_into_file "app/models/record.rb", :after => loc do
@@ -569,11 +564,11 @@ class HydraTutorial < Thor
   If you launch the Rails interactive console, we can now create
   and manipulate our object using methods provided by OM.
 
-      > obj = Record.new
-      > obj.title = "My object title"
-      > obj.save
-      > obj.descMetadata.content
-      # => A MODS XML document\n}, STATEMENT
+    > obj = Record.new
+    > obj.title = "My object title"
+    > obj.save
+    > obj.descMetadata.content
+    # => A MODS XML document\n}, STATEMENT
     rails_console unless @@conf.quick
   end
 
@@ -604,8 +599,8 @@ class HydraTutorial < Thor
   desc('add_new_form: FIX', 'FIX')
   def add_new_form
     say %Q{
- The scaffold just provided the basic outline for an application, so
- we need to provide the guts for the web form. Here's a simple one:\n\n}, STATEMENT
+  The scaffold just provided the basic outline for an application, so
+  we need to provide the guts for the web form. Here's a simple one:\n\n}, STATEMENT
     files = [
       ["_form.wiring_it_into_rails.html.erb", "app/views/records/_form.html.erb"],
       ["show.html.erb",                       "app/views/records/show.html.erb"],
@@ -620,10 +615,10 @@ class HydraTutorial < Thor
   desc('check_the_new_form: FIX', 'FIX')
   def check_the_new_form
     say %Q{
- If we start the Rails server, we should now be able to visit the records
- in the browser, create new records, and edit existing records.
+  If we start the Rails server, we should now be able to visit the records
+  in the browser, create new records, and edit existing records.
 
- Start by creating a new record:\n}, STATEMENT
+  Start by creating a new record:\n}, STATEMENT
     rails_server '/records/new'
   end
 
@@ -807,17 +802,17 @@ include Hydra::Solr::Document
   desc('run_integration_test_fail: FIX', 'FIX')
   def run_integration_test_fail
     say %Q{
-    Now that the integration spec is in place, when we try to run rspec,
-    we'll get a test failure because it can't connect to Fedora.\n}, STATEMENT
+  Now that the integration spec is in place, when we try to run rspec,
+  we'll get a test failure because it can't connect to Fedora.\n}, STATEMENT
     run 'rspec'
   end
 
   desc('add_jettywrapper_ci_task: FIX', 'FIX')
   def add_jettywrapper_ci_task
     say %Q{
-    Instead, we need to add a new Rake task that knows how to wrap the
-    test suite --  start jetty before running the tests and stop jetty
-    at the end. We can use a feature provided by jettywrapper to do this.\n\n}, STATEMENT
+  Instead, we need to add a new Rake task that knows how to wrap the
+  test suite --  start jetty before running the tests and stop jetty
+  at the end. We can use a feature provided by jettywrapper to do this.\n\n}, STATEMENT
     copy_file 'ci.rake', 'lib/tasks/ci.rake'
     run_git('Added ci task')
     rake 'jetty:stop'
@@ -828,7 +823,7 @@ include Hydra::Solr::Document
   desc('add_coverage_stats: FIX', 'FIX')
   def add_coverage_stats
     say %Q{
-    Now that we have tests, we also want to have some coverage statistics.\n}, STATEMENT
+  Now that we have tests, we also want to have some coverage statistics.\n}, STATEMENT
 
     gem_group :development, :test do
       gem 'simplecov'
@@ -859,8 +854,8 @@ end
     rake 'jetty:start'
 
     say %Q{
-    Go take a look at the coverage report, open the file coverage/index.html
-    in your browser.\n}, STATEMENT
+  Go take a look at the coverage report, open the file coverage/index.html
+  in your browser.\n}, STATEMENT
     continue_prompt
   end
 
