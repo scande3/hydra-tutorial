@@ -1,5 +1,6 @@
 TODO:
   - Incorporate enhancements from notes.txt info tutorial.
+  - See issues submitted by users on Github.
 
   - Improve README.
   - Remove monkey-patch to hydra-head.
