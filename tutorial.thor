@@ -42,6 +42,7 @@ module HydraTutorialHelpers
   end
 
   def rails_server url = '/'
+    return if @@conf.quick
     say %Q{
   We'll start the Rails server for you. It should be available in 
   your browser at:
@@ -345,7 +346,7 @@ class HydraTutorial < Thor
   If we launched the Rails application server, we can see the application 
   running in the browser and you can see if everything is working.\n}, STATEMENT
 
-    rails_server unless @@conf.quick
+    rails_server
   end
 
   desc('adding_dependencies: FIX', 'FIX')
@@ -587,7 +588,7 @@ class HydraTutorial < Thor
  in the browser, create new records, and edit existing records. 
 
  Start by creating a new record:\n}, STATEMENT
-    rails_server '/records/new' unless @@conf.quick
+    rails_server '/records/new'
   end
 
   desc('add_hydra_gems: FIX', 'FIX')
@@ -710,7 +711,7 @@ include Hydra::Solr::Document
     f = "#{f.strip}/app/views/_user_util_links.html.erb"
     gsub_file f, /.+folder_index_path.+/, ''
 
-    rails_server('/records/new') unless @@conf.quick
+    rails_server('/records/new')
   end
 
   desc('foobar: FIX', 'FIX')
