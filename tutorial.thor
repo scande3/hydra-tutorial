@@ -29,7 +29,7 @@ module HydraTutorialHelpers
   def rails_console
     return if @@conf.quick
     say %Q{
-  We'll launch the console again. Give some of those commands a try.\n}, STATEMENT
+  We'll launch the console again.\n}, STATEMENT
     say %Q{
   Hit Ctrl-D (^D) to stop the Rails console and continue this tutorial.\n}, WAIT
     run "rails c"
@@ -270,21 +270,16 @@ class HydraTutorial < Thor
   def welcome
     say %Q{
   Welcome to this Hydra tutorial. We're going to step through building a
-  working Hydra application. We'll build the application gradually, starting
-  by building our "business logic", wiring in HTML views, and then
-  connecting it to our Rails application.
+  working Hydra application. We'll build the application gradually, starting by
+  building our "business logic", wiring in HTML views, and then connecting it
+  to our Rails application.
 
-  At several points in this tutorial, as we iteratively develop our files,
-  you may be prompted to review conflicts between versions of files. It is
-  safe to blindly accept the changes ('y'), however you may wish to view
-  the diff ('d') to see the things we're change.
+  We'll generate a stub application in the #{@@conf.app} folder. You can change
+  that using the --app option.
 
   This tutorial, a README file, and our bug tracker are at:
 
-      https://github.com/projecthydra/hydra-tutorial
-
-  We'll generate a stub application in the #{@@conf.app}
-  folder. You can change that using the --app option.\n}, STATEMENT
+      https://github.com/projecthydra/hydra-tutorial\n}, STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
@@ -337,8 +332,8 @@ class HydraTutorial < Thor
 
     if File.exists? @@conf.app
       say %Q{
-    #{@@conf.app} already exists. Either remove it or provide
-    a different application name using the --app option.}, WARNING
+  #{@@conf.app} already exists. Either remove it or provide
+  a different application name using the --app option.}, WARNING
       exit
     end
 
@@ -382,8 +377,12 @@ class HydraTutorial < Thor
 
   desc('adding_dependencies: FIX', 'FIX')
   def adding_dependencies
-    gem 'execjs'
-    gem 'therubyracer'
+    say %Q{
+  Now we'll add some Javascript dependencies.\n}, STATEMENT
+    gem_group :assets do
+      gem 'execjs'
+      gem 'therubyracer'
+    end
     run_git('Added gems for Javascript: execjs and therubyracer')
   end
 
@@ -417,19 +416,24 @@ class HydraTutorial < Thor
     copy_file 'fedora.yml', 'config/fedora.yml'
 
     say %Q{
-  Add the 'jettywrapper' gem, which adds Rake tasks to start and stop Jetty.\n}, STATEMENT
+  And we will add the 'jettywrapper' gem, which adds Rake tasks to start
+  and stop Jetty.\n}, STATEMENT
 
-    gem 'jettywrapper'
+    gem_group :development, :test do
+      gem 'jettywrapper'
+    end
     run 'bundle install', :capture => false
     run_git('Solr and Fedora configuration')
+  end
 
+  desc('starting_jetty: FIX', 'FIX')
+  def starting_jetty
     say %Q{
-  Starting Jetty\n}, STATEMENT
+  Now we'll start Jetty.\n}, STATEMENT
     rake 'jetty:start'
 
     say %Q{
-  Take a look around. Jetty should be running on port 8983. You can see
-  the Fedora server at:
+  Jetty should be running on port 8983. You can see the Fedora server at:
 
     http://localhost:8983/fedora/
 
@@ -442,6 +446,8 @@ class HydraTutorial < Thor
 
   desc('remove_public_index: FIX', 'FIX')
   def remove_public_index
+    say %Q{
+  Removing the default home page from Rails. We will replace it later.\n}, STATEMENT
     remove_file 'public/index.html'
     run_git('Removed the Rails index.html file')
   end
@@ -478,28 +484,37 @@ class HydraTutorial < Thor
   launch the Rails interactive console (`rails c`), we can create
   and manipulate our object:
 
-    ## CREATE
-    > obj = Record.new
-    # => #<Record:1571331701243443635 @pid="__DO_NOT_USE__" >
-    > obj.descMetadata.content = e.g. '<my_xml_content />'
-    > obj.save
+      # CREATE
+      > obj = Record.new
+      > xml = '<xyz><foo>ABC</foo><foo>DEF</foo><bar>123</bar></xyz>'
+      > obj.descMetadata.content = xml
+      > obj.save
 
-    > obj.pid
-    # => e.g. 'changeme:1'
+      > pid = obj.pid
 
-    ## RETRIEVE
-    > obj = Record.find('changeme:1')
-    > ds = obj.descMetadata
-    # => #<ActiveFedora::NokogiriDatastream:3283711306477137919 ...>
-    > ds.content
-    # => (should be the XML document you added before)
+      # RETRIEVE
+      > obj = Record.find(pid)
+      > ds = obj.descMetadata
+      > puts ds.content
 
-    ## UPDATE
-    # manipulating XML:
-    > ds.ng_xml.xpath('//my_xml_content')
+      # UPDATE
+      > doc = ds.ng_xml
+      > elements = doc.xpath '//foo'
+      > elements.each { |e| puts e }
 
-    ## DELETE
-    > obj.delete\n}, STATEMENT
+      # Now check the Fedora object in the browser.
+      #   -> open http://localhost:8983/fedora/objects
+      #   -> click search
+      #   -> click the hyperlink of the object's PID (eg, 'changeme:1')
+      #   -> click hyperlink to view the object's datastreams list
+      #   -> click hyperlink to view the content of the descMetadata datastream
+
+      # Back in the Rails console.
+
+      # DELETE
+      > obj.delete
+      > exit\n}, STATEMENT
+
     rails_console
   end
 
@@ -518,34 +533,52 @@ class HydraTutorial < Thor
   desc('experiment_with_om_descmd: FIX', 'FIX')
   def experiment_with_om_descmd
     say %Q{
-  If you launch the Rails interactive console, we can now create and
+  If we launch the Rails interactive console, you can now create and
   manipulate our object using methods provided by OM.
 
     > obj = Record.new
     > obj.descMetadata.title = "My object title"
     > obj.save
-    > obj.descMetadata.content
-    # => An XML document with the title "My object title"\n}, STATEMENT
+
+  Notice also that OM also makes it easy to instantiate an empty version
+  of a datastream. This behavior is controlled by the code in the
+  xml_template() method of our Record model. Having set a value for
+  the title and saved the object, you can now take a look at the entire
+  datastream spawned by OM according to the instructions in the
+  xml_template() method:
+  
+    > puts obj.descMetadata.content
+
+    > obj.delete
+    > exit\n}, STATEMENT
     rails_console
   end
 
   desc('use_the_delegate_method: FIX', 'FIX')
   def use_the_delegate_method
     say %Q{
-  We can use the #delegate method to tell the model-object how
-  to access these attributes.
+  We can use the delegate() method to tell the model object how
+  to access its descMetadata attributes.\n\n}, STATEMENT
+
+    loc = %Q{\nend\n}
+    insert_into_file "app/models/record.rb", :before => loc do
+      "\n  delegate :title, :to => 'descMetadata'"
+    end
+    run_git('Modify Record model to delegate title to descMetadata')
+
+    say %Q{
+  Back in the Rails console you can now access the title attribute directly
+  from the object:
 
     > obj = Record.new
     > obj.title = "My object title"
     > obj.save
-    > obj.descMetadata.content
-    # => An XML document with the title "My object title"\n\n}, STATEMENT
+    > puts obj.descMetadata.content
+    > puts obj.title.inspect
+    > obj.delete
+    > exit\n}, STATEMENT
 
-    loc = 'has_metadata :name => "descMetadata", :type => DatastreamMetadata\n'
-    insert_into_file "app/models/record.rb", :after => loc do
-      "delegate :title, :to => 'descMetadata'\n"
-    end
-    run_git('Modify Record model to delegate title to descMetadata')
+    rails_console
   end
 
   desc('add_mods_model_with_mods_descmd: FIX', 'FIX')
@@ -573,8 +606,8 @@ class HydraTutorial < Thor
     > obj = Record.new
     > obj.title = "My object title"
     > obj.save
-    > obj.descMetadata.content
-    # => A MODS XML document\n}, STATEMENT
+    > puts obj.descMetadata.content
+    > exit\n}, STATEMENT
     rails_console
   end
 
@@ -593,11 +626,12 @@ class HydraTutorial < Thor
     run_git('Used Rails generator to create controller and views for the Record model')
 
     say %Q{
-  If you look in ./app/views/records, you can see a set of
-  Rails ERB templates.
+  You can see a set of Rails ERB templates, along with a controller that
+  ties the Record model to those view, if you look in the following
+  directories of the application:
 
-  ./app/controlers/records_controller.rb contains the controller
-  that ties the model to the views.\n}, STATEMENT
+      app/controlers/records_controller.rb
+      app/views/records/\n}, STATEMENT
 
     continue_prompt
   end
@@ -605,8 +639,8 @@ class HydraTutorial < Thor
   desc('add_new_form: FIX', 'FIX')
   def add_new_form
     say %Q{
-  The scaffold just provided the basic outline for an application, so
-  we need to provide the guts for the web form. Here's a simple one:\n\n}, STATEMENT
+  The scaffold provided only the basic outline for an application, so
+  we need to provide the guts for the web form.\n\n}, STATEMENT
     files = [
       ["_form.wiring_it_into_rails.html.erb", "app/views/records/_form.html.erb"],
       ["show.html.erb",                       "app/views/records/show.html.erb"],
@@ -636,7 +670,7 @@ class HydraTutorial < Thor
   patterns that have emerged in the Hydra community, including search,
   gated discovery, etc.
 
-  We'll add a few new gems:
+  We'll add a few gems:
 
     - blacklight provides a discovery interface on top of the Solr index
 
@@ -684,7 +718,7 @@ class HydraTutorial < Thor
   desc('hydra_jetty_config: FIX', 'FIX')
   def hydra_jetty_config
     say %Q{
-  Hydra provides some configuration for Solr and Fedora. Use them.\n}, STATEMENT
+  Hydra provides some configuration for Solr and Fedora. We will use them.\n}, STATEMENT
     rake 'jetty:stop'
     rake 'hydra:jetty:config'
     rake 'jetty:start'
@@ -735,11 +769,19 @@ include Hydra::Solr::Document
   def check_catalog
     say %Q{
   Blacklight and Hydra-Head have added some new functionality to the
-  application. We can now look at a search interface (provided
-  by Blacklight) and use gated discovery over our repository. By default,
-  objects are only visible to their creator.
+  application. We can now look at a search interface (provided by Blacklight)
+  and use gated discovery over our repository. By default, objects are only
+  visible to their creator.
 
-  Create some new objects, and then check out the search catalog at:
+  First create a new user account:
+
+      http://localhost:3000/users/sign_up
+
+  Then create some Record objects:
+
+      http://localhost:3000/records/new
+
+  And then check the search catalog:
 
       http://localhost:3000/catalog\n}, STATEMENT
 
@@ -767,12 +809,12 @@ include Hydra::Solr::Document
   end
 
   # TODO: write the test.
-  desc('write_model_test: FIX', 'FIX')
-  def write_model_test
-    # copy_file 'record_test.rb', 'spec/models/record_test.rb'
-    # run_git('Added a model test')
-    run 'rspec'
-  end
+  # desc('write_model_test: FIX', 'FIX')
+  # def write_model_test
+  #   # copy_file 'record_test.rb', 'spec/models/record_test.rb'
+  #   # run_git('Added a model test')
+  #   run 'rspec'
+  # end
 
   # TODO: this test should do something.
   desc('write_controller_test: FIX', 'FIX')
