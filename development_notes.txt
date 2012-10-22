@@ -1,154 +1,57 @@
 TODO:
-  - Incorporate enhancements from notes.txt info tutorial.
-  - See issues submitted by users on Github.
+    - Incorporate enhancements from notes.txt info tutorial.
 
-  - Improve README.
-  - Remove monkey-patch to hydra-head.
-  - Write method to extract long messages from the tutorial code.
-  - Support the --pop option.
-  - Implement a --help option.
-  - Support control over verbosity, and tie it to :capture declarations.
-  - Improve tutorial unit tests.
-  - Improve the views in the tutorial.
-  - Write unit tests for the tutorial script itself.
-  - Write an integration test for the entire tutorial.
+    - See issues submitted by users on Github.
+
+    - Improve README.
+    - Remove monkey-patch to hydra-head.
+    - Write method to extract long messages from the tutorial code.
+    - Support the --pop option.
+    - Implement a --help option.
+    - Support control over verbosity, and tie it to :capture declarations.
+    - Improve tutorial unit tests.
+    - Improve the views in the tutorial.
+    - Write unit tests for the tutorial script itself.
+    - Write an integration test for the entire tutorial.
+
+    - When adding execjs and therubyracer, put them in the :assets block?
+    - When adding jettywrapper, put in the :development block?
+
+    - After installing fedora, add instruction to see:
+        open http://localhost:8983/fedora/
+        open http://localhost:8983/solr/development/admin/
+
+    - rails console edits
+
+        ## CREATE
+        > obj = Record.new
+        > xml = '<xyz><foo>ABC</foo><foo>DEF</foo><bar>123</bar></xyz>'
+        > obj.descMetadata.content = xml
+        > obj.save
+
+        > pid = obj.pid
+
+        ## RETRIEVE
+        > obj = Record.find(pid)
+        > ds = obj.descMetadata
+        > puts ds.content
+
+        ## UPDATE
+        > doc = ds.ng_xml
+        > elements = doc.xpath '//foo'
+        > elements.each { |e| puts e }
+        > exit
+
+    - Check it out in the browser.
+    open http://localhost:8983/fedora/objects/
+      -> click search
+      -> click the hyperlink of the object's PID (eg, 'changeme:1')
+      -> click hyperlink to view the object's datastreams list
+      -> click hyperlink to view the content of the descMetadata datastream
 
 
 ====================================================================
 
-# Install a version of Ruby.
-
-# Install RVM.
-
-# Install Ruby 1.9.
-
-# Create a gemset
-rvm use --rvmrc --create 1.9.3@hydra_walkthrough
-
-# See current gems.
-gem list
-
-# Install bundler and Rails.
-gem install bundler rails
-
-# See the effect.
-gem list
-
-# Initialize a new Rails application.
-rails new hydra_walkthrough
-
-# Put the .rvmrc file in our project directory.
-mv .rvmrc hydra_walkthrough
-
-# Get a copy of the resources directory.
-...
-
-# Get a copy the hydra-jetty project.
-git clone git://github.com/projecthydra/hydra-jetty.git
-
-# Put a copy of it into our Rails project.
-cp -r hydra-jetty hydra_walkthrough/jetty
-
-# Check out the initial Rails app.
-cd hydra_walkthrough
-
-# Add to .gitignore
-jetty
-.rvmrc
-Gemfile.lock
-
-# Git.
-git init
-git add .
-git commit -m 'Initial commit'
-
-# Run the Rails server in a second terminal window.
-rails server
-open http://localhost:3000
-
-# Check before we add some gems.
-rake -T
-
-# Add some lines to Gemfile.
-# In the :assets block.
-gem 'execjs'
-gem 'therubyracer', :platforms => :ruby
-
-# In the :development block.
-gem 'jettywrapper'
-gem 'debugger'
-
-# Git.
-git add .
-git commit -m 'Added some gems: execjs, therubyracer, jettywrapper, debugger'
-
-# Set up SOLR and Fedora config files.
-cp ../resources/solr.yml   config
-cp ../resources/fedora.yml config
-
-# Git.
-git add -A
-git commit -m 'Created SOLR and Fedora config files'
-
-# Bundle.
-bundle install
-
-# Check after: note the jetty tasks.
-rake -T
-
-# Start the Jetty server that will run Fedora and SOLR.
-rake jetty:start
-
-# Check them out.
-open http://localhost:8983/fedora/
-open http://localhost:8983/solr/development/admin/
-
-# More Gemile.
-gem 'active-fedora'
-gem 'om'
-
-# Bundle.
-bundle install
-
-# Git.
-git add .
-git commit -m 'Added active-fedora and OM gems'
-
-# Create a basic model.
-cp ../resources/basic_af_model.rb app/models/record.rb
-
-# Git.
-git add -A
-git commit -m 'Created a basic Record model with a descMetadata datastream'
-
-# Check it out.
-rails console
-
-    ## CREATE
-    > obj = Record.new
-    > xml = '<xyz><foo>ABC</foo><foo>DEF</foo><bar>123</bar></xyz>'
-    > obj.descMetadata.content = xml
-    > obj.save
-
-    > pid = obj.pid
-
-    ## RETRIEVE
-    > obj = Record.find(pid)
-    > ds = obj.descMetadata
-    > puts ds.content
-
-    ## UPDATE
-    > doc = ds.ng_xml
-    > elements = doc.xpath '//foo'
-    > elements.each { |e| puts e }
-    > exit
-
-# Check it out in the browser.
-open http://localhost:8983/fedora/objects/
-  -> click search
-  -> click the hyperlink of the object's PID (eg, 'changeme:1')
-  -> click hyperlink to view the object's datastreams list
-  -> click hyperlink to view the content of the descMetadata datastream
 
 # Back in the Rails console:
 
