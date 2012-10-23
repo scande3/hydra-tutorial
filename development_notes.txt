@@ -10,6 +10,8 @@ Write method to extract long messages from the tutorial code.
 
 Support the --pop option.
 
+Implement a --list option.
+
 Implement a --help option.
 
 Support control over verbosity, and tie it to :capture declarations.

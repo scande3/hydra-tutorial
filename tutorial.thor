@@ -132,6 +132,7 @@ class HydraTutorial < Thor
   HTConf = Struct.new(
     # Command-line options.
     :run_all,        # If true, run all remaining tasks rather than only the next task.
+    :thru,           # Implies :run_all and stores name of last task to be run.
     :quick,          # If true, bypass interactive user confirmations.
     :reset,          # If true, reset the tutorial back to the beginning.
     :gems_from_git,  # If true, get a couple of gems directly from github.
@@ -150,6 +151,7 @@ class HydraTutorial < Thor
   desc('main: FIX', 'FIX')
   method_options(
     :run_all       => :boolean,
+    :thru          => :string,
     :quick         => :boolean,
     :reset         => :boolean,
     :gems_from_git => :boolean,
@@ -190,6 +192,9 @@ class HydraTutorial < Thor
       # Persist the fact that the task was run to the YAML progress file.
       @@conf.done << t
       File.open(@@conf.progress_file, "w") { |f| f.puts(@@conf.to_yaml) }
+
+      # Exit loop if we just ran the task user supplied with --thru option.
+      break if t == @@conf.thru
     end
 
     # Inform user if the tutorial is finished.
@@ -206,6 +211,7 @@ class HydraTutorial < Thor
   def self.initialize_config(opts)
     @@conf                = HTConf.new
     @@conf.run_all        = opts[:run_all]
+    @@conf.thru           = opts[:thru]
     @@conf.quick          = opts[:quick]
     @@conf.reset          = opts[:reset]
     @@conf.gems_from_git  = opts[:gems_from_git]
@@ -216,6 +222,7 @@ class HydraTutorial < Thor
     @@conf.progress_file  = (opts[:progress_file] || '.hydra-tutorial-progress')
     @@conf.done           = nil
     @@conf.templates_path = File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
+    @@conf.run_all = true if @@conf.thru
   end
 
   # Initializes the YAML progress file that keeps track of which
