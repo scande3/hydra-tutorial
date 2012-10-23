@@ -644,6 +644,7 @@ class HydraTutorial < Thor
     files = [
       ["_form.wiring_it_into_rails.html.erb", "app/views/records/_form.html.erb"],
       ["show.html.erb",                       "app/views/records/show.html.erb"],
+      ["index.html.erb",                      "app/views/records/index.html.erb"],
     ]
     files.each do |src, dst|
       remove_file dst
