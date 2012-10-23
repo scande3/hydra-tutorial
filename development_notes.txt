@@ -1,3 +1,5 @@
+Incorporate the edits from the last commit (00b010bb) of hydra_walkthrough.
+
 See issues submitted by users on Github.
 
 Improve README.
