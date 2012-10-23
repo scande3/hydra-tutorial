@@ -1,27 +1,33 @@
 <%= form_for(@record) do |f| -%>
-  <h2>Title</h2>
+  <h2>Title and Author</h2>
+
   <div class="row">
       <%= f.label :title, "Title" %>
       <%= f.text_area :title, :value=>@record.title, :required => true %>
   </div>
 
-  <h2>Abstract and keywords</h2>
+  <div class="row">
+      <%= f.label :author, "Author" %>
+      <%= f.text_area :author, :value=>@record.author, :required => true %>
+  </div>
+
+  <h2>Abstract</h2>
 
   <div class="row">
     <%= f.label :abstract %>
-    <%= f.text_area :abstract, :value=>@record.abstract.first, :required=>true %>
+    <%= f.text_area :abstract, :value=>@record.abstract, :required=>true %>
   </div>
 
-  <div class="row">
-    <%= label_tag("hydrus_item_keywords", "Keywords") %>
-    <%= text_field_tag("hydrus_item_keywords", @record.descMetadata.subject.topic.join(", ")) -%>
-    <div class="help">separate keywords with commas</div>
-  </div>
+  <h2>Citation and related URL</h2>
 
-  <h2>Citations</h2>
   <div class="row">
     <%= f.label :preferred_citation, "Preferred citation for this object", :class => "hidden-tablet" %>
     <%= f.text_area :preferred_citation, :value=>@record.preferred_citation %>
+  </div>
+
+  <div class="row">
+    <%= f.label :related_url, "URL of related item", :class => "hidden-tablet" %>
+    <%= f.text_area :related_url, :value=>@record.related_url %>
   </div>
 
   <input type="submit" class="btn btn-small save-edits" name="save" id="save" />
