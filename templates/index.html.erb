@@ -2,18 +2,18 @@
 
 <table>
   <tr>
-    <th>Title</th>
     <th>Actions</th>
+    <th>Title</th>
   </tr>
 
 <% @records.each do |record| %>
   <tr>
-    <td><%= record.title %></td>
     <td>
       <%= link_to 'Show', record %> |
       <%= link_to 'Edit', edit_record_path(record) %> |
       <%= link_to 'Delete', record, method: :delete, data: { confirm: 'Are you sure?' } %>
     </td>
+    <td><%= record.title %></td>
   </tr>
 
 <% end %>
