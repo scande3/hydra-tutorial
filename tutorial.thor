@@ -692,7 +692,7 @@ class HydraTutorial < Thor
       gem 'hydra-head', :git => "git://github.com/projecthydra/hydra-head.git"
     else
       gem 'blacklight'
-      gem 'hydra-head', ">= 4.1.1"
+      gem 'hydra-head', ">= 5.0.0.rc1"
     end
     gem 'devise'
     run 'bundle install', :capture => false
