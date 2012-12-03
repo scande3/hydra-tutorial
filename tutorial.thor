@@ -404,7 +404,7 @@ class HydraTutorial < Thor
   We'll download it now and put a copy into your application's directory.
   This might take awhile.\n}, STATEMENT
     unless File.exists? '../jetty'
-      git :clone => '-b 4.x git://github.com/projecthydra/hydra-jetty.git ../jetty'
+      git :clone => '-b 5.x git://github.com/projecthydra/hydra-jetty.git ../jetty'
     end
     unless File.exists? 'jetty'
       run 'cp -R ../jetty jetty'
