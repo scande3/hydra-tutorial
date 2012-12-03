@@ -1,4 +1,3 @@
-test
 # Hydra Tutorial Application
 
 The tutorial will:
@@ -28,7 +27,7 @@ collections, more complete test example, etc.
 This tutorial depends on the following:
 
  * A Unix-like operating system.
- * Ruby 1.8.7 or higher (but 1.9 is recommended).
+ * Ruby 1.9 or higher.
  * Java 1.5 or higher (to run Solr under a Java servlet container).
  * [RVM](https://rvm.beginrescueend.com/rvm/install/) (recommended).
  * Git (recommended).
