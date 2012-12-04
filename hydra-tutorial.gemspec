@@ -13,6 +13,6 @@ Gem::Specification.new do |s|
   s.add_dependency "rails"
   s.add_dependency "bundler"
   s.add_dependency "sqlite3"
-  s.add_dependency "libv8"
-  s.add_dependency "therubyracer"
+  s.add_dependency "execjs"
+  s.add_dependency "therubyracer", "~> 0.10.0"
 end
