@@ -12,4 +12,5 @@ Gem::Specification.new do |s|
   s.add_dependency "thor", "~> 0.15"
   s.add_dependency "rails"
   s.add_dependency "bundler"
+  s.add_dependency "sqlite3"
 end
