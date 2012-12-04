@@ -74,7 +74,10 @@ module HydraTutorialHelpers
   # get the say string for the named method using i18n gem
   def get_say_string(params)
     method=caller[0][/`.*'/][1..-2]
-    I18n.t("steps.#{method}",params)
+    key = "steps.#{method}"
+    key << ".#{params[:substep]}" if(params.include?(:substep))
+
+    I18n.t(key,params)
   end
 
 end
@@ -280,42 +283,27 @@ class HydraTutorial < Thor
   # The remaining methods represent the steps in the tutorial.
   # The tasks should be defined in the order they should run.
   ####
-  
+
   desc('welcome: FIX', 'FIX')
-  def welcome  
+  def welcome
     say get_say_string({:conf_app=>@@conf.app}),STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
   def install_ruby
-    return if @@conf.quick
-    say %Q{
-  Obviously, if you can run this tutorial, you have already installed ruby.
-    }, STATEMENT
+    #return if @@conf.quick
+    say get_say_string({:substep => '1'}), STATEMENT
 
     ruby_executable = run 'which ruby', :capture => true, :verbose => false
     ruby_executable.strip!
 
-    say %Q{
-  You are running this using:
-
-      #{ruby_executable}}, STATEMENT
+#    say get_say_string(:substep => '2', :ruby_executable => ruby_executable), STATEMENT
+     say get_say_string({:substep => '2', :ruby_executable => 'rvm ruby'}), STATEMENT
 
     if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/
-      say %Q{
-  It looks like you're using rvm/rbenv/etc. We'll use
-  this environment to build the application.\n}, STATEMENT
+      say say get_say_string({:substep => '3'}), STATEMENT
     else
-      say %Q{
-  We checked, and it looks like you might be using a system-wide ruby.
-  We suggest you use somethng like rvm [1], rbenv [2], etc to manage
-  your ruby projects.
-
-  You can continue and hope for the best, or go install one of these
-  ruby managers, which may make your life easier.
-
-  [1] http://rvm.io/
-  [2] https://github.com/sstephenson/rbenv/\n}, WARNING
+      say say get_say_string({:substep => '4'}), WARNING
 
       continue_prompt
     end
@@ -358,7 +346,7 @@ class HydraTutorial < Thor
 
   Alternatively, you can use a tool like Gitx to see the differences
   in the code from one step in the tutorial to the next.
-  
+
   First, we'll initialize our project's Git repository.\n\n}, STATEMENT
     run_git('', 'init')
     run_git('Initial commit')
@@ -550,7 +538,7 @@ class HydraTutorial < Thor
   the title and saved the object, you can now take a look at the entire
   datastream spawned by OM according to the instructions in the
   xml_template() method:
-  
+
     > puts obj.descMetadata.content
 
     > obj.delete
@@ -995,7 +983,7 @@ end
     rake 'jetty:stop'
   end
 
-  
+
 end
 
 
