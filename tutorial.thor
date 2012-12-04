@@ -793,11 +793,8 @@ include Hydra::Solr::Document
 
       http://localhost:3000/catalog\n}, STATEMENT
 
-    copy_file 'assets_controller_helper.rb', 'lib/hydra/assets_controller_helper.rb'
+    copy_file '_user_util_links.html.erb', 'app/views/_user_util_links.html.erb'
 
-    f = `bundle show hydra-head`
-
-    copy_file '_user_util_links.html.erb', f
     rails_server('/records/new')
   end
 
