@@ -346,3 +346,10 @@ en:
     fix_add_assets_links:
          We'll add a little styling to the Hydra app and add a link to add a new
          Record in the header of the layout.
+
+    start_everything:
+          Before the tutorial ends, we'll give you a final chance to look
+          at the web application.
+
+    stop_jetty:
+          This is the end of the tutorial. We'll shut down the jetty server.
