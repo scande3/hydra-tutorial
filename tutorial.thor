@@ -471,7 +471,7 @@ class HydraTutorial < Thor
 
   desc('enhance_model_with_om_descmd: FIX', 'FIX')
   def enhance_model_with_om_descmd
-    say user_message, STATEMENTNT
+    say user_message, STATEMENT
     f = "app/models/record.rb"
     remove_file f
     copy_file "basic_om_model.rb", f

@@ -1,18 +1,18 @@
 en:
   hello: "Hello world from San Diego"
   steps:
-    welcome: |
+    welcome: |+
       Welcome to this Hydra tutorial. We're going to step through building a
       working Hydra application. We'll build the application gradually, starting by
       building our "business logic", wiring in HTML views, and then connecting it
       to our Rails application.
 
-      "We'll generate a stub application in the %{conf_app} folder. You can change
+      We'll generate a stub application in the %{conf_app} folder. You can change
       that using the --app option.
 
       This tutorial, a README file, and our bug tracker are at:
 
-          https://github.com/projecthydra/hydra-tutorial"
+          https://github.com/projecthydra/hydra-tutorial
 
     install_ruby: 
       one: "Obviously, if you can run this tutorial, you have already installed ruby.  If you are on a Mac, you might need to install homebrew and do a 'brew install v8' to get therubyracer gem to install."
@@ -21,7 +21,7 @@ en:
 
             %{ruby_executable}
  
-      three_conditional: | 
+      three_conditional: |
         It looks like you're using rvm/rbenv/etc. We'll use
         this environment to build the application.
 
