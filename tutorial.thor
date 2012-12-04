@@ -72,14 +72,27 @@ module HydraTutorialHelpers
   end
 
   # get the say string for the named method using i18n gem
-  def get_say_string(*params)
+  def user_message(*params)
     vals=params[0]
     method=caller[0][/`.*'/][1..-2]
     key = "steps.#{method}"
     key << ".#{vals[:substep]}" if (!vals.nil? && vals.include?(:substep))
-    I18n.t(key,vals)
+    I18n.t(key,vals) + "\n"
   end
 
+  def collect_keys(scope, translations)
+    full_keys = []
+    translations.to_a.each do |key, translations|
+      new_scope = scope.dup << key
+      if translations.is_a?(Hash)
+        full_keys += collect_keys(new_scope, translations)
+      else
+        full_keys << new_scope.join('.')
+      end
+    end
+    return full_keys
+  end
+  
 end
 
 
@@ -284,26 +297,39 @@ class HydraTutorial < Thor
   # The tasks should be defined in the order they should run.
   ####
 
+  desc('get_keys: FIX','FIX')
+  def get_keys
+    I18n.backend.send(:init_translations)
+    # Get all keys from all locales
+    all_keys = I18n.backend.send(:translations).collect do |check_locale, translations|
+      collect_keys([], translations)
+    end.flatten.uniq
+    step_keys=all_keys.collect do |key|
+      key if key.include?('steps.')
+    end
+    puts step_keys.compact.inspect
+  end
+  
   desc('welcome: FIX', 'FIX')
   def welcome
     conf_name=@@conf.app
-    say get_say_string(:conf_app=>conf_name,:var2=>'yo'),STATEMENT
+    say user_message(:conf_app=>conf_name,:var2=>'yo'),STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
   def install_ruby
     #return if @@conf.quick
-    say get_say_string(:substep => 'one'), STATEMENT
+    say user_message(:substep => 'one'), STATEMENT
 
     ruby_executable = run 'which ruby', :capture => true, :verbose => false
     ruby_executable.strip!
 
-    say get_say_string(:substep => 'two', :ruby_executable => 'rvm ruby'), STATEMENT
+    say user_message(:substep => 'two', :ruby_executable => 'rvm ruby'), STATEMENT
 
     if (ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/)
-      say say get_say_string(:substep => 'three'), STATEMENT
+      say user_message(:substep => 'three'), STATEMENT
     else
-      say say get_say_string(:substep => 'four'), WARNING
+      say user_message(:substep => 'four'), WARNING
 
       continue_prompt
     end
@@ -311,21 +337,16 @@ class HydraTutorial < Thor
 
   desc('install_bundler_and_rails: FIX', 'FIX')
   def install_bundler_and_rails
-    say %Q{
-  We're going to install some prerequisite gems in order to create our
-  skeleton Rails application.\n}, STATEMENT
+    say user_message, STATEMENT
     run 'gem install bundler rails', :capture => false
   end
 
   desc('new_rails_app: FIX', 'FIX')
   def new_rails_app
-    say %Q{
-  Now we'll create the application.\n}, STATEMENT
+    say user_message(:substep => 'one'), STATEMENT
 
     if File.exists? @@conf.app
-      say %Q{
-  #{@@conf.app} already exists. Either remove it or provide
-  a different application name using the --app option.}, WARNING
+      say user_message(:substep => 'two',:conf_app=>@@conf.app), WARNING
       exit
     end
 
@@ -334,43 +355,20 @@ class HydraTutorial < Thor
 
   desc('git_initial_commit: FIX', 'FIX')
   def git_initial_commit
-    say %Q{
-  We will keep track of our work using Git so that you can see how
-  the files in the project change from one step to the next. To see
-  the difference you can open a terminal in the Rails application
-  directory and run the following Git command.
-
-    git diff HEAD^1..HEAD
-
-  Or you can simply run the tutorial with the --diff option.
-
-  Alternatively, you can use a tool like Gitx to see the differences
-  in the code from one step in the tutorial to the next.
-
-  First, we'll initialize our project's Git repository.\n\n}, STATEMENT
+    say user_message, STATEMENT
     run_git('', 'init')
     run_git('Initial commit')
   end
 
   desc('out_of_the_box: FIX', 'FIX')
   def out_of_the_box
-    say %Q{
-  Here's a chance to look around. You can see the structure of
-  a Rails application. In particular, look at:
-     ./app
-     ./config
-     ./lib
-     Gemfile
-
-  If we launched the Rails application server, we can see the application
-  running in the browser and you can see if everything is working.\n}, STATEMENT
+    say user_message, STATEMENT
     rails_server
   end
 
   desc('adding_dependencies: FIX', 'FIX')
   def adding_dependencies
-    say %Q{
-  Now we'll add some Javascript dependencies.\n}, STATEMENT
+    say user_message, STATEMENT
     gem_group :assets do
       gem 'execjs'
       gem 'therubyracer'
@@ -380,14 +378,8 @@ class HydraTutorial < Thor
 
   desc('add_fedora_and_solr_with_hydrajetty: FIX', 'FIX')
   def add_fedora_and_solr_with_hydrajetty
-    say %Q{
-  Fedora runs as a Java servlet inside a container like Tomcat or Jetty.
-  Hydra provides a bundled version of Fedora and Solr for
-  testing and development.\n}, STATEMENT
-
-    say %Q{
-  We'll download it now and put a copy into your application's directory.
-  This might take awhile.\n}, STATEMENT
+    say user_message(:substep=>'one'), STATEMENT
+    say user_message(:substep=>'two'), STATEMENT
     unless File.exists? '../jetty'
       git :clone => '-b 4.x git://github.com/projecthydra/hydra-jetty.git ../jetty'
     end
@@ -400,16 +392,10 @@ class HydraTutorial < Thor
 
   desc('jetty_configuration: FIX', 'FIX')
   def jetty_configuration
-    say %Q{
-  We'll add some configuration yml files with information to connect
-  to Solr and Fedora.\n\n}, STATEMENT
-
+    say user_message(:substep=>'one'), STATEMENT
     copy_file 'solr.yml', 'config/solr.yml'
     copy_file 'fedora.yml', 'config/fedora.yml'
-
-    say %Q{
-  And we will add the 'jettywrapper' gem, which adds Rake tasks to start
-  and stop Jetty.\n}, STATEMENT
+    say user_message(:substep=>'two'), STATEMENT
 
     gem_group :development, :test do
       gem 'jettywrapper'
