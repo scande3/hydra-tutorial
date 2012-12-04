@@ -36,7 +36,7 @@ en:
         [1] http://rvm.io/
         [2] https://github.com/sstephenson/rbenv/"
 
-    install_bundler_and_rails:
+    install_bundler_and_rails: |
         "We're going to install some prerequisite gems in order to create our
         skeleton Rails application."
 
@@ -48,11 +48,11 @@ en:
         "%{@@conf.app} already exists. Either remove it or provide
         a different application name using the --app option."
 
-    git_initial_commit:
+    git_initial_commit: |
         "We will keep track of our work using Git so that you can see how
         the files in the project change from one step to the next. To see
         the difference you can open a terminal in the Rails application
-        directory and run the following Git command.
+        directory and run the following Git command."
 
           git diff HEAD^1..HEAD
 
@@ -61,7 +61,7 @@ en:
         Alternatively, you can use a tool like Gitx to see the differences
         in the code from one step in the tutorial to the next.
 
-        First, we'll initialize our project's Git repository."
+        First, we'll initialize our project's Git repository.
 
     out_of_the_box:
         "Here's a chance to look around. You can see the structure of
@@ -96,4 +96,16 @@ en:
         "And we will add the 'jettywrapper' gem, which adds Rake tasks to start
         and stop Jetty."
 
+    starting_jetty:
+      one:
+        "Now we'll start Jetty"
+
+      two: |
+        "Jetty should be running on port 8983. You can see the Fedora server at:
+
+          http://localhost:8983/fedora/
+
+        And a Solr index at:
+
+          http://localhost:8983/solr/development/admin/"
 
