@@ -59,6 +59,12 @@ Install the hydra-tutorial gem:
 $ gem install hydra-tutorial
 ```
 
+## Creating a Guide
+
+```bash
+$ hydra-guide
+```
+
 ## Running the tutorial
 
 Run the tutorial one step at a time -- specifically, run the next step

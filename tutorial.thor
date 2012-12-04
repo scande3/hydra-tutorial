@@ -425,41 +425,23 @@ class HydraTutorial < Thor
 
   desc('starting_jetty: FIX', 'FIX')
   def starting_jetty
-    say %Q{
-  Now we'll start Jetty.\n}, STATEMENT
+    say user_message(:substep=>'one'), STATEMENT
     rake 'jetty:start'
-
-    say %Q{
-  Jetty should be running on port 8983. You can see the Fedora server at:
-
-    http://localhost:8983/fedora/
-
-  And a Solr index at:
-
-    http://localhost:8983/solr/development/admin/\n}, STATEMENT
+    say user_message(:substep=>'two'), STATEMENT
 
     continue_prompt
   end
 
   desc('remove_public_index: FIX', 'FIX')
   def remove_public_index
-    say %Q{
-  Removing the default home page from Rails. We will replace it later.\n}, STATEMENT
+    say user_message, STATEMENT
     remove_file 'public/index.html'
     run_git('Removed the Rails index.html file')
   end
 
   desc('add_activefedora: FIX', 'FIX')
   def add_activefedora
-    say %Q{
-  The active-fedora gem provides a way to model Fedora objects within Ruby.
-  It will help you create Ruby models for creating, updating and reading
-  objects from Fedora using a domain-specific language (DSL) similar
-  to the Rails' ActiveRecord.
-
-  The om gem provides mechanisms for mapping XML documents into Ruby.
-
-  We'll add both of these to the Gemfile.\n\n}, STATEMENT
+    say user_message, STATEMENT
     gem 'active-fedora'
     gem 'om'
     run 'bundle install', :capture => false
@@ -468,59 +450,20 @@ class HydraTutorial < Thor
 
   desc('add_initial_model: FIX', 'FIX')
   def add_initial_model
-    say %Q{
-  Now we'll add a basic ActiveFedora stub model for a 'Record'.\n\n}, STATEMENT
+    say user_message, STATEMENT
     copy_file "basic_af_model.rb", "app/models/record.rb"
     run_git('Created a minimal Record model')
   end
 
   desc('rails_console_tour: FIX', 'FIX')
   def rails_console_tour
-    say %Q{
-  Now we'll give you a chance to look at the Record model. If you
-  launch the Rails interactive console (`rails c`), we can create
-  and manipulate our object:
-
-      # CREATE
-      > obj = Record.new
-      > xml = '<xyz><foo>ABC</foo><foo>DEF</foo><bar>123</bar></xyz>'
-      > obj.descMetadata.content = xml
-      > obj.save
-
-      > pid = obj.pid
-
-      # RETRIEVE
-      > obj = Record.find(pid)
-      > ds = obj.descMetadata
-      > puts ds.content
-
-      # UPDATE
-      > doc = ds.ng_xml
-      > elements = doc.xpath '//foo'
-      > elements.each { |e| puts e }
-
-      # Now check the Fedora object in the browser.
-      #   -> open http://localhost:8983/fedora/objects
-      #   -> click search
-      #   -> click the hyperlink of the object's PID (eg, 'changeme:1')
-      #   -> click hyperlink to view the object's datastreams list
-      #   -> click hyperlink to view the content of the descMetadata datastream
-
-      # Back in the Rails console.
-
-      # DELETE
-      > obj.delete
-      > exit\n}, STATEMENT
-
+    say user_message, STATEMENT
     rails_console
   end
 
   desc('enhance_model_with_om_descmd: FIX', 'FIX')
   def enhance_model_with_om_descmd
-    say %Q{
-  Instead of working with the Nokogiri XML document directly, we
-  can use OM to make querying an XML document easier. We'll replace the
-  previous Record with a OM-enabled document.\n\n}, STATEMENT
+    say user_message, STATEMENTNT
     f = "app/models/record.rb"
     remove_file f
     copy_file "basic_om_model.rb", f
@@ -529,33 +472,13 @@ class HydraTutorial < Thor
 
   desc('experiment_with_om_descmd: FIX', 'FIX')
   def experiment_with_om_descmd
-    say %Q{
-  If we launch the Rails interactive console, you can now create and
-  manipulate our object using methods provided by OM.
-
-    > obj = Record.new
-    > obj.descMetadata.title = "My object title"
-    > obj.save
-
-  Notice also that OM also makes it easy to instantiate an empty version
-  of a datastream. This behavior is controlled by the code in the
-  xml_template() method of our Record model. Having set a value for
-  the title and saved the object, you can now take a look at the entire
-  datastream spawned by OM according to the instructions in the
-  xml_template() method:
-
-    > puts obj.descMetadata.content
-
-    > obj.delete
-    > exit\n}, STATEMENT
+    say user_message, STATEMENT
     rails_console
   end
 
   desc('use_the_delegate_method: FIX', 'FIX')
   def use_the_delegate_method
-    say %Q{
-  We can use the delegate() method to tell the model object how
-  to access its descMetadata attributes.\n\n}, STATEMENT
+    say user_message(:substep=>'one'), STATEMENT
 
     loc = %Q{\nend\n}
     insert_into_file "app/models/record.rb", :before => loc do
@@ -563,17 +486,7 @@ class HydraTutorial < Thor
     end
     run_git('Modify Record model to delegate title to descMetadata')
 
-    say %Q{
-  Back in the Rails console you can now access the title attribute directly
-  from the object:
-
-    > obj = Record.new
-    > obj.title = "My object title"
-    > obj.save
-    > puts obj.descMetadata.content
-    > puts obj.title.inspect
-    > obj.delete
-    > exit\n}, STATEMENT
+    say user_message(:substep=>'two'), STATEMENT
 
     rails_console
   end
