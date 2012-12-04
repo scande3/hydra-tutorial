@@ -367,7 +367,7 @@ class HydraTutorial < Thor
     say user_message(:substep => 'one'), STATEMENT
 
     if File.exists? @@conf.app
-      say user_message(:substep => 'two',:conf_app=>@@conf.app), WARNING
+      say user_message(:substep => 'two_conditional',:conf_app=>@@conf.app), WARNING
       exit
     end
 

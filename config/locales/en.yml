@@ -45,7 +45,7 @@ en:
       one:
         "Now we'll create the application."
 
-      two:
+      two_conditional:
         "%{conf_app} already exists. Either remove it or provide
         a different application name using the --app option."
 
