@@ -17,9 +17,9 @@ en:
     install_ruby: 
       one: "Obviously, if you can run this tutorial, you have already installed ruby."
       two: | 
-        You are running this using:
+        "You are running this using:"
 
-            %{ruby_executable}
+            "%{ruby_executable}"
  
       three: | 
         It looks like you're using rvm/rbenv/etc. We'll use
@@ -54,14 +54,14 @@ en:
         the difference you can open a terminal in the Rails application
         directory and run the following Git command."
 
-          git diff HEAD^1..HEAD
+          "git diff HEAD^1..HEAD
 
         Or you can simply run the tutorial with the --diff option.
 
         Alternatively, you can use a tool like Gitx to see the differences
         in the code from one step in the tutorial to the next.
 
-        First, we'll initialize our project's Git repository.
+        First, we'll initialize our project's Git repository."
 
     out_of_the_box:
         "Here's a chance to look around. You can see the structure of
@@ -101,11 +101,104 @@ en:
         "Now we'll start Jetty"
 
       two: |
-        "Jetty should be running on port 8983. You can see the Fedora server at:
+        "Jetty should be running on port 8983. You can see the Fedora server at:"
 
-          http://localhost:8983/fedora/
+          "http://localhost:8983/fedora/
 
         And a Solr index at:
 
           http://localhost:8983/solr/development/admin/"
 
+    remove_public_index:
+      "Removing the default home page from Rails. We will replace it later."
+
+    add_activefedora: |
+       "The active-fedora gem provides a way to model Fedora objects within Ruby.
+       It will help you create Ruby models for creating, updating and reading
+       objects from Fedora using a domain-specific language (DSL) similar
+       to the Rails' ActiveRecord."
+
+       "The om gem provides mechanisms for mapping XML documents into Ruby.
+
+       We'll add both of these to the Gemfile."
+
+    add_initial_model:
+       "Now we'll add a basic ActiveFedora stub model for a 'Record'."
+
+    rails_console_tour: |
+       "Now we'll give you a chance to look at the Record model. If you
+       launch the Rails interactive console (`rails c`), we can create
+       and manipulate our object:"
+
+           "# CREATE
+           > obj = Record.new
+           > xml = '<xyz><foo>ABC</foo><foo>DEF</foo><bar>123</bar></xyz>'
+           > obj.descMetadata.content = xml
+           > obj.save
+
+           > pid = obj.pid
+
+           # RETRIEVE
+           > obj = Record.find(pid)
+           > ds = obj.descMetadata
+           > puts ds.content
+
+           # UPDATE
+           > doc = ds.ng_xml
+           > elements = doc.xpath '//foo'
+           > elements.each { |e| puts e }
+
+           # Now check the Fedora object in the browser.
+           #   -> open http://localhost:8983/fedora/objects
+           #   -> click search
+           #   -> click the hyperlink of the object's PID (eg, 'changeme:1')
+           #   -> click hyperlink to view the object's datastreams list
+           #   -> click hyperlink to view the content of the descMetadata datastream
+
+           # Back in the Rails console.
+
+           # DELETE
+           > obj.delete
+           > exit"
+
+    enhance_model_with_om_descmd: |
+           "Instead of working with the Nokogiri XML document directly, we
+           can use OM to make querying an XML document easier. We'll replace the
+           previous Record with a OM-enabled document."
+
+    experiment_with_om_descmd: |
+           "If we launch the Rails interactive console, you can now create and
+           manipulate our object using methods provided by OM."
+
+             "> obj = Record.new
+             > obj.descMetadata.title = \"My object title\"
+             > obj.save
+
+           Notice also that OM also makes it easy to instantiate an empty version
+           of a datastream. This behavior is controlled by the code in the
+           xml_template() method of our Record model. Having set a value for
+           the title and saved the object, you can now take a look at the entire
+           datastream spawned by OM according to the instructions in the
+           xml_template() method:
+
+             > puts obj.descMetadata.content
+
+             > obj.delete
+             > exit"
+
+    use_the_delegate_method:
+      one:
+         "We can use the delegate() method to tell the model object how
+         to access its descMetadata attributes."
+
+      two: |
+          "Back in the Rails console you can now access the title attribute directly
+           from the object:"
+
+             "> obj = Record.new
+             > obj.title = \"My object title\"
+             > obj.save
+             > puts obj.descMetadata.content
+             > puts obj.title.inspect
+             > obj.delete
+             > exit"
