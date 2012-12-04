@@ -7,12 +7,12 @@ en:
       building our "business logic", wiring in HTML views, and then connecting it
       to our Rails application.
 
-      We'll generate a stub application in the %{conf_app} folder. You can change
+      "We'll generate a stub application in the %{conf_app} folder. You can change
       that using the --app option.
 
       This tutorial, a README file, and our bug tracker are at:
 
-          https://github.com/projecthydra/hydra-tutorial
+          https://github.com/projecthydra/hydra-tutorial"
         
     install_ruby: 
       1: "Obviously, if you can run this tutorial, you have already installed ruby."
@@ -20,7 +20,7 @@ en:
         You are running this using:
 
             #{ruby_executable}
-          
+ 
       3: | 
         It looks like you're using rvm/rbenv/etc. We'll use
         this environment to build the application.\n
