@@ -72,12 +72,12 @@ module HydraTutorialHelpers
   end
 
   # get the say string for the named method using i18n gem
-  def get_say_string(params)
+  def get_say_string(*params)
+    vals=params[0]
     method=caller[0][/`.*'/][1..-2]
     key = "steps.#{method}"
-    key << ".#{params[:substep]}" if(params.include?(:substep))
-
-    I18n.t(key,params)
+    key << ".#{vals[:substep]}" if (!vals.nil? && vals.include?(:substep))
+    I18n.t(key,vals)
   end
 
 end
@@ -286,24 +286,24 @@ class HydraTutorial < Thor
 
   desc('welcome: FIX', 'FIX')
   def welcome
-    say get_say_string({:conf_app=>@@conf.app}),STATEMENT
+    conf_name=@@conf.app
+    say get_say_string(:conf_app=>conf_name,:var2=>'yo'),STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
   def install_ruby
     #return if @@conf.quick
-    say get_say_string({:substep => '1'}), STATEMENT
+    say get_say_string(:substep => 'one'), STATEMENT
 
     ruby_executable = run 'which ruby', :capture => true, :verbose => false
     ruby_executable.strip!
 
-#    say get_say_string(:substep => '2', :ruby_executable => ruby_executable), STATEMENT
-     say get_say_string({:substep => '2', :ruby_executable => 'rvm ruby'}), STATEMENT
+    say get_say_string(:substep => 'two', :ruby_executable => 'rvm ruby'), STATEMENT
 
-    if ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/
-      say say get_say_string({:substep => '3'}), STATEMENT
+    if (ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/)
+      say say get_say_string(:substep => 'three'), STATEMENT
     else
-      say say get_say_string({:substep => '4'}), WARNING
+      say say get_say_string(:substep => 'four'), WARNING
 
       continue_prompt
     end
