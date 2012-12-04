@@ -408,7 +408,7 @@ class HydraTutorial < Thor
     say user_message(:substep=>'one'), STATEMENT
     say user_message(:substep=>'two'), STATEMENT
     unless File.exists? '../jetty'
-      git :clone => '-b 4.x git://github.com/projecthydra/hydra-jetty.git ../jetty'
+      git :clone => '-b master git://github.com/projecthydra/hydra-jetty.git ../jetty'
     end
     unless File.exists? 'jetty'
       run 'cp -R ../jetty jetty'
