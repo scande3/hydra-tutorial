@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.summary     = "Hydra head tutorial walkthrough"
   s.description = "Tutorial that works through setting up a hydra head"
   s.files       = `git ls-files`.split("\n")
-  s.executables = ['hydra-tutorial']
+  s.executables = ['hydra-tutorial','hydra-guide']
   s.add_dependency "thor", "~> 0.15"
   s.add_dependency "rails"
   s.add_dependency "i18n"

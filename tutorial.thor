@@ -187,15 +187,35 @@ class HydraTutorial < Thor
   )
 
   def create_guide    
+    HydraTutorial.initialize_config(options)
+    params={:conf_app=>@@conf.app,:ruby_executable => "unknown"}
+    guide_output_filename=File.join(File.dirname(__FILE__), 'hydra-tutorial-guide.txt')
+    
     I18n.backend.send(:init_translations)
     # Get all keys from all locales
     all_keys = I18n.backend.send(:translations).collect do |check_locale, translations|
       collect_keys([], translations)
-    end.flatten.uniq
-    step_keys=all_keys.collect do |key|
-      key if key.include?('steps.')
+    end.uniq.flatten
+    prev_title=''
+    
+    File.open(guide_output_filename, 'w') do |file|  
+      file.puts "HYDRA TUTORIAL GUIDE"
+      file.puts "auto generated on #{Time.now}"
+      file.puts ""
+      
+      step_keys=all_keys.each do |key|
+        if key.include?('steps.') # only print out the keys containing steps
+          key_split=key.split('.') # split key into parts
+          title=key_split[1].split("_").map {|word| word.capitalize}.join(" ") # get title, uppercasing it and converting _ to spaces
+          file.puts "#{title}: " if title != prev_title # only print the title once per step (it could occur multiple times if there are substeps)
+          prev_title=title.dup
+          file.puts I18n.t(key,params)
+          file.puts ""
+        end
+      end
     end
-    puts step_keys.compact.inspect
+    
+    puts "Guide written to #{guide_output_filename}"
   end
 
   def main(*requested_tasks)
@@ -312,8 +332,7 @@ class HydraTutorial < Thor
   
   desc('welcome: FIX', 'FIX')
   def welcome
-    conf_name=@@conf.app
-    say user_message(:conf_app=>conf_name,:var2=>'yo'),STATEMENT
+    say user_message(:conf_app=>@@conf.app),STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
@@ -324,7 +343,7 @@ class HydraTutorial < Thor
     ruby_executable = run 'which ruby', :capture => true, :verbose => false
     ruby_executable.strip!
 
-    say user_message(:substep => 'two', :ruby_executable => 'rvm ruby'), STATEMENT
+    say user_message(:substep => 'two', :ruby_executable => ruby_executable), STATEMENT
 
     if (ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/)
       say user_message(:substep => 'three'), STATEMENT
