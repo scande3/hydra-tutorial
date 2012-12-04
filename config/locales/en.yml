@@ -2,7 +2,7 @@ en:
   hello: "Hello world from San Diego"
   steps:
     welcome: |
-      Welcome to this Hydra tutorial. YAML ROCKS! We're going to step through building a
+      Welcome to this Hydra tutorial. We're going to step through building a
       working Hydra application. We'll build the application gradually, starting by
       building our "business logic", wiring in HTML views, and then connecting it
       to our Rails application.

@@ -71,6 +71,12 @@ module HydraTutorialHelpers
     end
   end
 
+  # get the say string for the named method using i18n gem
+  def get_say_string(params)
+    method=caller[0][/`.*'/][1..-2]
+    I18n.t("steps.#{method}",params)
+  end
+
 end
 
 
@@ -274,15 +280,10 @@ class HydraTutorial < Thor
   # The remaining methods represent the steps in the tutorial.
   # The tasks should be defined in the order they should run.
   ####
-
-  # get the say string for the named method using i18n gem
-  def get_say_string(method,params)
-    I18n.t("steps.#{method}",params)
-  end
   
   desc('welcome: FIX', 'FIX')
   def welcome  
-    say get_say_string(__method__,{:conf_app=>@@conf.app}),STATEMENT
+    say get_say_string({:conf_app=>@@conf.app}),STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
