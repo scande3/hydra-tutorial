@@ -16,30 +16,31 @@ en:
 
     install_ruby: 
       one: "Obviously, if you can run this tutorial, you have already installed ruby."
-      two_noguide: | 
-        "You are running this using:"
+      two_noguide: |+
+        You are running this using:
 
-            "%{ruby_executable}"
+            %{ruby_executable}
  
       three_conditional: | 
         It looks like you're using rvm/rbenv/etc. We'll use
         this environment to build the application.
 
-      four_conditional: "We checked, and it looks like you might be using a system-wide ruby."
+      four_conditional: |
+        We checked, and it looks like you might be using a system-wide ruby.
       
       five: |
         We suggest you use somethng like rvm [1], rbenv [2], etc to manage
         your ruby projects.
 
-        "You can continue and hope for the best, or go install one of these
+        You can continue and hope for the best, or go install one of these
         ruby managers, which may make your life easier.
 
         [1] http://rvm.io/
-        [2] https://github.com/sstephenson/rbenv/"
+        [2] https://github.com/sstephenson/rbenv/
 
     install_bundler_and_rails: |
-        "We're going to install some prerequisite gems in order to create our
-        skeleton Rails application."
+        We're going to install some prerequisite gems in order to create our
+        skeleton Rails application.
 
     new_rails_app:
       one:
@@ -49,89 +50,90 @@ en:
         "%{conf_app} already exists. Either remove it or provide
         a different application name using the --app option."
 
-    git_initial_commit: |
-        "We will keep track of our work using Git so that you can see how
+    git_initial_commit: |+
+        We will keep track of our work using Git so that you can see how
         the files in the project change from one step to the next. To see
         the difference you can open a terminal in the Rails application
-        directory and run the following Git command."
+        directory and run the following Git command.
 
-          "git diff HEAD^1..HEAD
+          git diff HEAD^1..HEAD
 
         Or you can simply run the tutorial with the --diff option.
 
         Alternatively, you can use a tool like Gitx to see the differences
         in the code from one step in the tutorial to the next.
 
-        First, we'll initialize our project's Git repository."
+        First, we'll initialize our project's Git repository.
 
-    out_of_the_box:
-        "Here's a chance to look around. You can see the structure of
+    out_of_the_box: |+
+        Here's a chance to look around. You can see the structure of
         a Rails application. In particular, look at:
+
            ./app
            ./config
            ./lib
            Gemfile
 
         If we launched the Rails application server, we can see the application
-        running in the browser and you can see if everything is working."
+        running in the browser and you can see if everything is working.
 
     adding_dependencies:
-        "Now we'll add some Javascript dependencies."
+        Now we'll add some Javascript dependencies.
 
     add_fedora_and_solr_with_hydrajetty:
       one:
-        "Fedora runs as a Java servlet inside a container like Tomcat or Jetty.
+        Fedora runs as a Java servlet inside a container like Tomcat or Jetty.
         Hydra provides a bundled version of Fedora and Solr for
-        testing and development."
+        testing and development.
 
       two:
-        "We'll download it now and put a copy into your application's directory.
-        This might take awhile."
+        We'll download it now and put a copy into your application's directory.
+        This might take awhile.
 
     jetty_configuration:
       one:
-        "We'll add some configuration yml files with information to connect
-        to Solr and Fedora."
+        We'll add some configuration yml files with information to connect
+        to Solr and Fedora.
 
       two:
-        "And we will add the 'jettywrapper' gem, which adds Rake tasks to start
-        and stop Jetty."
+        And we will add the 'jettywrapper' gem, which adds Rake tasks to start
+        and stop Jetty.
 
     starting_jetty:
       one:
-        "Now we'll start Jetty"
+        Now we'll start Jetty
 
-      two: |
-        "Jetty should be running on port 8983. You can see the Fedora server at:"
+      two: |+
+        Jetty should be running on port 8983. You can see the Fedora server at:
 
-          "http://localhost:8983/fedora/
+          http://localhost:8983/fedora/
 
         And a Solr index at:
 
-          http://localhost:8983/solr/development/admin/"
+          http://localhost:8983/solr/development/admin/
 
     remove_public_index:
-      "Removing the default home page from Rails. We will replace it later."
+      Removing the default home page from Rails. We will replace it later.
 
     add_activefedora: |
-       "The active-fedora gem provides a way to model Fedora objects within Ruby.
+       The active-fedora gem provides a way to model Fedora objects within Ruby.
        It will help you create Ruby models for creating, updating and reading
        objects from Fedora using a domain-specific language (DSL) similar
-       to the Rails' ActiveRecord."
+       to the Rails' ActiveRecord.
 
-       "The om gem provides mechanisms for mapping XML documents into Ruby.
+       The om gem provides mechanisms for mapping XML documents into Ruby.
 
-       We'll add both of these to the Gemfile."
+       We'll add both of these to the Gemfile.
 
     add_initial_model:
-       "Now we'll add a basic ActiveFedora stub model for a 'Record'."
+       Now we'll add a basic ActiveFedora stub model for a 'Record'.
 
-    rails_console_tour: |
-       "Now we'll give you a chance to look at the Record model. If you
+    rails_console_tour: |+
+       Now we'll give you a chance to look at the Record model. If you
        launch the Rails interactive console (`rails c`), we can create
-       and manipulate our object:"
+       and manipulate our object:
 
-           "# CREATE
+           # CREATE
            > obj = Record.new
            > xml = '<xyz><foo>ABC</foo><foo>DEF</foo><bar>123</bar></xyz>'
            > obj.descMetadata.content = xml
@@ -160,19 +162,19 @@ en:
 
            # DELETE
            > obj.delete
-           > exit"
+           > exit
 
     enhance_model_with_om_descmd: |
-           "Instead of working with the Nokogiri XML document directly, we
+           Instead of working with the Nokogiri XML document directly, we
            can use OM to make querying an XML document easier. We'll replace the
-           previous Record with a OM-enabled document."
+           previous Record with a OM-enabled document.
 
-    experiment_with_om_descmd: |
-           "If we launch the Rails interactive console, you can now create and
-           manipulate our object using methods provided by OM."
+    experiment_with_om_descmd: |+
+           If we launch the Rails interactive console, you can now create and
+           manipulate our object using methods provided by OM.
 
-             "> obj = Record.new
-             > obj.descMetadata.title = \"My object title\"
+             > obj = Record.new
+             > obj.descMetadata.title = "My object title"
              > obj.save
 
            Notice also that OM also makes it easy to instantiate an empty version
@@ -185,21 +187,22 @@ en:
              > puts obj.descMetadata.content
 
              > obj.delete
-             > exit"
+             > exit
 
     use_the_delegate_method:
       one:
-         "We can use the delegate() method to tell the model object how
-         to access its descMetadata attributes."
+         We can use the delegate() method to tell the model object how
+         to access its descMetadata attributes.
 
-      two: |
-          "Back in the Rails console you can now access the title attribute directly
-           from the object:"
+      two: |+
+          Back in the Rails console you can now access the title attribute directly
+           from the object:
 
-             "> obj = Record.new
-             > obj.title = \"My object title\"
+             > obj = Record.new
+             > obj.title = "My object title"
              > obj.save
              > puts obj.descMetadata.content
              > puts obj.title.inspect
              > obj.delete
-             > exit"
+             > exit
+
