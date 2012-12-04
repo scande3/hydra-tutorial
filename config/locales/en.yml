@@ -15,7 +15,7 @@ en:
           https://github.com/projecthydra/hydra-tutorial"
 
     install_ruby: 
-      one: "Obviously, if you can run this tutorial, you have already installed ruby."
+      one: "Obviously, if you can run this tutorial, you have already installed ruby.  If you are on a Mac, you might need to install homebrew and do a 'brew install v8' to get therubyracer gem to install."
       two_noguide: |+
         You are running this using:
 

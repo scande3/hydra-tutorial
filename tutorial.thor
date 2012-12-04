@@ -178,7 +178,7 @@ class HydraTutorial < Thor
     HydraTutorial.initialize_config(options)
     params={:conf_app=>@@conf.app} # interpolations we will just pass into every translations
     
-    guide_output_filename=File.join(File.dirname(__FILE__), 'hydra-tutorial-guide.txt') # guide output filename
+    guide_output_filename=File.join(Dir.pwd, 'hydra-tutorial-guide.txt') # guide output filename
     
     I18n.backend.send(:init_translations)
     # Get all keys from all locales
