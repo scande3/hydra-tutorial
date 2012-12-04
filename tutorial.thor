@@ -404,7 +404,7 @@ class HydraTutorial < Thor
   We'll download it now and put a copy into your application's directory.
   This might take awhile.\n}, STATEMENT
     unless File.exists? '../jetty'
-      git :clone => '-b 5.x git://github.com/projecthydra/hydra-jetty.git ../jetty'
+      git :clone => 'http://github.com/projecthydra/hydra-jetty.git ../jetty'
     end
     unless File.exists? 'jetty'
       run 'cp -R ../jetty jetty'
@@ -688,11 +688,11 @@ class HydraTutorial < Thor
       functions, like registration, sign-in, etc.\n\n}, STATEMENT
 
     if @@conf.gems_from_git
-      gem 'blacklight', :git => "git://github.com/projectblacklight/blacklight.git"
-      gem 'hydra-head', :git => "git://github.com/projecthydra/hydra-head.git"
+      gem 'blacklight', :git => "http://github.com/projectblacklight/blacklight.git"
+      gem 'hydra-head', :git => "http://github.com/projecthydra/hydra-head.git"
     else
       gem 'blacklight'
-      gem 'hydra-head', ">= 5.0.0.rc1"
+      gem 'hydra-head', ">= 5.x"
     end
     gem 'devise'
     run 'bundle install', :capture => false
@@ -740,9 +740,9 @@ class HydraTutorial < Thor
 
   We'll also update our controller to provide access controls on records.\n\n}, STATEMENT
 
-    inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
-      "  include Hydra::AssetsControllerHelper\n"
-    end
+    #inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
+    #  "  include Hydra::AssetsControllerHelper\n"
+    #end
 
     insert_into_file "app/controllers/records_controller.rb", :after => "@record = Record.new(params[:record])\n" do
       "    apply_depositor_metadata(@record)\n"
@@ -793,11 +793,11 @@ include Hydra::Solr::Document
 
       http://localhost:3000/catalog\n}, STATEMENT
 
-    # TODO: remove this monkey-patch fixing a bug in hydra-head.
-    f = `bundle show hydra-head`
-    f = "#{f.strip}/app/views/_user_util_links.html.erb"
-    gsub_file f, /.+folder_index_path.+/, ''
+    copy_file 'assets_controller_helper.rb', 'lib/hydra/assets_controller_helper.rb'
 
+    f = `bundle show hydra-head`
+
+    copy_file '_user_util_links.html.erb', f
     rails_server('/records/new')
   end
 
@@ -850,7 +850,7 @@ include Hydra::Solr::Document
   def write_integration_test
     say %Q{
   Here's a quick integration test that proves deposit works.\n}, STATEMENT
-    copy_file 'integration_spec.rb', 'spec/integration/integration_spec.rb'
+    copy_file 'integration_spec.rb', 'spec/features/integration_spec.rb'
     run_git('Added an integration test')
   end
 
