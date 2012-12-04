@@ -16,17 +16,18 @@ en:
 
     install_ruby: 
       one: "Obviously, if you can run this tutorial, you have already installed ruby."
-      two: | 
+      two_noguide: | 
         "You are running this using:"
 
             "%{ruby_executable}"
  
-      three: | 
+      three_conditional: | 
         It looks like you're using rvm/rbenv/etc. We'll use
         this environment to build the application.
 
-      four: |
-        We checked, and it looks like you might be using a system-wide ruby.
+      four_conditional: "We checked, and it looks like you might be using a system-wide ruby."
+      
+      five: |
         We suggest you use somethng like rvm [1], rbenv [2], etc to manage
         your ruby projects.
 

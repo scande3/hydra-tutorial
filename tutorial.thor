@@ -209,8 +209,10 @@ class HydraTutorial < Thor
           title=key_split[1].split("_").map {|word| word.capitalize}.join(" ") # get title, uppercasing it and converting _ to spaces
           file.puts "#{title}: " if title != prev_title # only print the title once per step (it could occur multiple times if there are substeps)
           prev_title=title.dup
-          file.puts I18n.t(key,params)
-          file.puts ""
+          if !(key.include?('_conditional') || key.include?('_noguide'))
+            file.puts I18n.t(key,params)
+            file.puts ""
+          end
         end
       end
     end
@@ -343,13 +345,13 @@ class HydraTutorial < Thor
     ruby_executable = run 'which ruby', :capture => true, :verbose => false
     ruby_executable.strip!
 
-    say user_message(:substep => 'two', :ruby_executable => ruby_executable), STATEMENT
+    say user_message(:substep => 'two_noguide', :ruby_executable => ruby_executable), STATEMENT
 
     if (ruby_executable =~ /rvm/ or ruby_executable =~ /rbenv/ or ruby_executable =~ /home/ or ruby_executable =~ /Users/)
-      say user_message(:substep => 'three'), STATEMENT
+      say user_message(:substep => 'three_conditional'), STATEMENT
     else
-      say user_message(:substep => 'four'), WARNING
-
+      say user_message(:substep => 'four_conditional'), WARNING
+      say user_message(:substep => 'five'), WARNING
       continue_prompt
     end
   end
