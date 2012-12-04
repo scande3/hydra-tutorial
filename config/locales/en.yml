@@ -45,7 +45,7 @@ en:
         "Now we'll create the application."
 
       two:
-        "%{@@conf.app} already exists. Either remove it or provide
+        "%{conf_app} already exists. Either remove it or provide
         a different application name using the --app option."
 
     git_initial_commit: |
