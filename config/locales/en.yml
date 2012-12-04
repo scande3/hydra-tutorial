@@ -206,3 +206,143 @@ en:
              > obj.delete
              > exit
 
+    add_mods_model_with_mods_descmd: |
+         We'll now replace the minimal XML metadata schema with a simple
+         MODS-based example, using an OM terminology we prepared earlier.
+
+         We'll put the MODS datastream in a separate module and file, so that
+         it can be easily reused in other ActiveFedora-based objects.
+
+    experiment_with_mods_descmd: |+
+         If you launch the Rails interactive console, we can now create
+         and manipulate our object using methods provided by OM.
+
+           > obj = Record.new
+           > obj.title = "My object title"
+           > obj.save
+           > puts obj.descMetadata.content
+           > exit
+
+    record_generator:
+      one:
+         Now that we've set up our model and successfully added content
+         into Fedora, now we want to connect the model to a Rails web application.
+
+         We'll start by using the standard Rails generators to create
+         a scaffold controller and views, which will give us a
+         place to start working.
+
+      two: |+
+         You can see a set of Rails ERB templates, along with a controller that
+         ties the Record model to those view, if you look in the following
+         directories of the application:
+
+             app/controlers/records_controller.rb
+             app/views/records/
+
+    add_new_form:
+       The scaffold provided only the basic outline for an application, so
+       we need to provide the guts for the web form.
+
+    check_the_new_form: |
+         If we start the Rails server, we should now be able to visit the records
+         in the browser, create new records, and edit existing records.
+
+         Start by creating a new record:
+
+    add_hydra_gems: |+
+         Thus far, we've been using component parts of the Hydra framework, but
+         now we'll add in the whole framework so we can take advantage of common
+         patterns that have emerged in the Hydra community, including search,
+         gated discovery, etc.
+
+         We'll add a few gems:
+
+           - blacklight provides a discovery interface on top of the Solr index
+
+           - hydra-head provides a number of common Hydra patterns
+
+           - devise is a standard Ruby gem for providing user-related
+             functions, like registration, sign-in, etc.
+
+    run_hydra_generators:
+         These gems provide generators for adding basic views, styles, and override
+         points into your application. We'll run these generators now.
+
+    db_migrate:
+         Blacklight uses a SQL database for keeping track of user bookmarks,
+         searches, etc. We'll run the migrations next:
+
+    hydra_jetty_config:
+         Hydra provides some configuration for Solr and Fedora. We will use them.
+
+    add_access_rights:
+         We need to make a couple changes to our controller and model to make
+         them fully-compliant objects by teaching them about access rights.
+
+         We'll also update our controller to provide access controls on records.
+
+    check_catalog: |+
+         Blacklight and Hydra-Head have added some new functionality to the
+         application. We can now look at a search interface (provided by Blacklight)
+         and use gated discovery over our repository. By default, objects are only
+         visible to their creator.
+
+         First create a new user account:
+
+             http://localhost:3000/users/sign_up
+
+         Then create some Record objects:
+
+             http://localhost:3000/records/new
+
+         And then check the search catalog:
+
+             http://localhost:3000/catalog
+
+    install_rspec:
+         One of the great things about the Rails framework is the strong
+         testing ethic. We'll use rspec to write a couple tests for
+         this application.
+
+    write_controller_test:
+         Here's a quick example of a test.
+
+    install_capybara:
+         We also want to write integration tests to test the end-result that
+         a user may see. We'll add the capybara gem to do that.
+
+    write_integration_test:
+         Here's a quick integration test that proves deposit works.
+
+    run_integration_test_fail:
+         Now that the integration spec is in place, when we try to run rspec,
+         we'll get a test failure because it can't connect to Fedora.
+
+    add_jettywrapper_ci_task:
+         Instead, we need to add a new Rake task that knows how to wrap the
+         test suite --  start jetty before running the tests and stop jetty
+         at the end. We can use a feature provided by jettywrapper to do this.
+
+    add_coverage_stats:
+      one:
+         Now that we have tests, we also want to have some coverage statistics.
+
+      two:
+         Go take a look at the coverage report, open the file coverage/index.html
+         in your browser.
+
+    add_file_uploads:
+         Now that we have a basic Hydra application working with metadata-only, we
+         want to enhance that with the ability to upload files. Let's add a new
+         datastream to our model.
+
+    add_file_upload_controller:
+         And educate our controller for managing file objects.
+
+    add_file_upload_ui:
+         And add a file upload field on the form.
+
+    fix_add_assets_links:
+         We'll add a little styling to the Hydra app and add a link to add a new
+         Record in the header of the layout.
