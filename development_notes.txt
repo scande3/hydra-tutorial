@@ -1,3 +1,13 @@
+Guide Generation and Messages
+-----------------------------
+When generating new messages to the user, add them to the locale file in config/locales/en.yml
+Each should have a unique key and be nested under "steps".  If you have multiple messages for a
+given step, give each message a unique key and reference it in the step method.
+If the key includes "_noguide", that message will *not* be included if the user generates
+a complete guide. If the key includes "_conditional", the guide may or may not show
+the user message (currently it will not).
+
+
 Incorporate the edits from the last commit (00b010bb) of hydra_walkthrough.
 
 See issues submitted by users on Github.

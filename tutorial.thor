@@ -71,7 +71,7 @@ module HydraTutorialHelpers
     end
   end
 
-  # get the say string for the named method using i18n gem
+  # get the say string for the calling method using i18n gem
   def user_message(*params)
     vals=params[0]
     method=caller[0][/`.*'/][1..-2]
@@ -125,7 +125,7 @@ class HydraTutorial < Thor
   # Returns an array of task names for the tasks that
   # constituting the steps in the tutorial.
   def self.tutorial_tasks
-    return tasks.keys.reject { |t| t == 'main' }
+    return tasks.keys.reject { |t| t == 'main' || t =='create_guide' }
   end
 
   # Returns a set of task names for the tasks that should not
@@ -172,6 +172,47 @@ class HydraTutorial < Thor
     :templates_path  # Directory where Thor can file source files for copy_file().
   )
 
+  desc('create_guide: FIX', 'FIX')
+  def create_guide    
+    
+    HydraTutorial.initialize_config(options)
+    params={:conf_app=>@@conf.app} # interpolations we will just pass into every translations
+    
+    guide_output_filename=File.join(File.dirname(__FILE__), 'hydra-tutorial-guide.txt') # guide output filename
+    
+    I18n.backend.send(:init_translations)
+    # Get all keys from all locales
+    all_keys = I18n.backend.send(:translations).collect do |check_locale, translations|
+      collect_keys([], translations)
+    end.uniq.flatten
+    prev_title=''
+    
+    File.open(guide_output_filename, 'w') do |file|  
+      file.puts "HYDRA TUTORIAL GUIDE"
+      file.puts "auto generated on #{Time.now}"
+      file.puts ""
+      counter=1
+      step_keys=all_keys.each do |key|
+        if key.include?('steps.') # only print out the keys containing steps
+          key_split=key.split('.') # split key into parts
+          title=key_split[1].split("_").map {|word| word.capitalize}.join(" ") # get title, uppercasing it and converting _ to spaces
+          if title != prev_title # only print the title once per step (it could occur multiple times if there are substeps)
+            file.puts "Step #{counter}. #{title}: " 
+            counter+=1
+          end
+          prev_title=title.dup
+          if !(key.include?('_conditional') || key.include?('_noguide'))
+            file.puts I18n.t(key,params)
+            file.puts ""
+          end
+        end
+      end
+    end
+    
+    puts "Guide written to #{guide_output_filename}"
+    
+  end
+  
   # Command-line options for the main() method.
   desc('main: FIX', 'FIX')
   method_options(
@@ -185,41 +226,6 @@ class HydraTutorial < Thor
     :diff          => :boolean,
     :app           => :string
   )
-
-  def create_guide    
-    HydraTutorial.initialize_config(options)
-    params={:conf_app=>@@conf.app,:ruby_executable => "unknown"}
-    guide_output_filename=File.join(File.dirname(__FILE__), 'hydra-tutorial-guide.txt')
-    
-    I18n.backend.send(:init_translations)
-    # Get all keys from all locales
-    all_keys = I18n.backend.send(:translations).collect do |check_locale, translations|
-      collect_keys([], translations)
-    end.uniq.flatten
-    prev_title=''
-    
-    File.open(guide_output_filename, 'w') do |file|  
-      file.puts "HYDRA TUTORIAL GUIDE"
-      file.puts "auto generated on #{Time.now}"
-      file.puts ""
-      
-      step_keys=all_keys.each do |key|
-        if key.include?('steps.') # only print out the keys containing steps
-          key_split=key.split('.') # split key into parts
-          title=key_split[1].split("_").map {|word| word.capitalize}.join(" ") # get title, uppercasing it and converting _ to spaces
-          file.puts "#{title}: " if title != prev_title # only print the title once per step (it could occur multiple times if there are substeps)
-          prev_title=title.dup
-          if !(key.include?('_conditional') || key.include?('_noguide'))
-            file.puts I18n.t(key,params)
-            file.puts ""
-          end
-        end
-      end
-    end
-    
-    puts "Guide written to #{guide_output_filename}"
-  end
-
   def main(*requested_tasks)
     # Setup.
     HydraTutorial.initialize_config(options)
@@ -495,13 +501,7 @@ class HydraTutorial < Thor
 
   desc('add_mods_model_with_mods_descmd: FIX', 'FIX')
   def add_mods_model_with_mods_descmd
-    say %Q{
-  We'll now replace the minimal XML metadata schema with a simple
-  MODS-based example, using an OM terminology we prepared earlier.
-
-  We'll put the MODS datastream in a separate module and file, so that
-  it can be easily reused in other ActiveFedora-based objects.\n}, STATEMENT
-
+    say user_message, STATEMENT
     f = "app/models/record.rb"
     remove_file f
     copy_file "basic_mods_model.rb", f
@@ -511,48 +511,24 @@ class HydraTutorial < Thor
 
   desc('experiment_with_mods_descmd: FIX', 'FIX')
   def experiment_with_mods_descmd
-    say %Q{
-  If you launch the Rails interactive console, we can now create
-  and manipulate our object using methods provided by OM.
-
-    > obj = Record.new
-    > obj.title = "My object title"
-    > obj.save
-    > puts obj.descMetadata.content
-    > exit\n}, STATEMENT
+    say user_message, STATEMENT
     rails_console
   end
 
   desc('record_generator: FIX', 'FIX')
   def record_generator
-    say %Q{
-  Now that we've set up our model and successfully added content
-  into Fedora, now we want to connect the model to a Rails web application.
-
-  We'll start by using the standard Rails generators to create
-  a scaffold controller and views, which will give us a
-  place to start working.\n\n}, STATEMENT
-
+    say user_message(:substep=>'one'), STATEMENT
     generate "scaffold_controller Record --no-helper --skip-test-framework"
     route "resources :records"
     run_git('Used Rails generator to create controller and views for the Record model')
-
-    say %Q{
-  You can see a set of Rails ERB templates, along with a controller that
-  ties the Record model to those view, if you look in the following
-  directories of the application:
-
-      app/controlers/records_controller.rb
-      app/views/records/\n}, STATEMENT
+    say user_message(:substep=>'two'), STATEMENT
 
     continue_prompt
   end
 
   desc('add_new_form: FIX', 'FIX')
   def add_new_form
-    say %Q{
-  The scaffold provided only the basic outline for an application, so
-  we need to provide the guts for the web form.\n\n}, STATEMENT
+    say user_message, STATEMENT
     files = [
       ["_form.wiring_it_into_rails.html.erb", "app/views/records/_form.html.erb"],
       ["show.html.erb",                       "app/views/records/show.html.erb"],
@@ -567,31 +543,13 @@ class HydraTutorial < Thor
 
   desc('check_the_new_form: FIX', 'FIX')
   def check_the_new_form
-    say %Q{
-  If we start the Rails server, we should now be able to visit the records
-  in the browser, create new records, and edit existing records.
-
-  Start by creating a new record:\n}, STATEMENT
+    say user_message, STATEMENT
     rails_server '/records/new'
   end
 
   desc('add_hydra_gems: FIX', 'FIX')
   def add_hydra_gems
-    say %Q{
-  Thus far, we've been using component parts of the Hydra framework, but
-  now we'll add in the whole framework so we can take advantage of common
-  patterns that have emerged in the Hydra community, including search,
-  gated discovery, etc.
-
-  We'll add a few gems:
-
-    - blacklight provides a discovery interface on top of the Solr index
-
-    - hydra-head provides a number of common Hydra patterns
-
-    - devise is a standard Ruby gem for providing user-related
-      functions, like registration, sign-in, etc.\n\n}, STATEMENT
-
+    say user_message, STATEMENT
     if @@conf.gems_from_git
       gem 'blacklight', :git => "git://github.com/projectblacklight/blacklight.git"
       gem 'hydra-head', :git => "git://github.com/projecthydra/hydra-head.git"
@@ -606,9 +564,7 @@ class HydraTutorial < Thor
 
   desc('run_hydra_generators: FIX', 'FIX')
   def run_hydra_generators
-    say %Q{
-  These gems provide generators for adding basic views, styles, and override
-  points into your application. We'll run these generators now.\n}, STATEMENT
+    say user_message, STATEMENT
     f = 'config/solr.yml'
     remove_file f
     generate 'blacklight', '--devise'
@@ -620,9 +576,7 @@ class HydraTutorial < Thor
 
   desc('db_migrate: FIX', 'FIX')
   def db_migrate
-    say %Q{
-  Blacklight uses a SQL database for keeping track of user bookmarks,
-  searches, etc. We'll run the migrations next:\n\n}, STATEMENT
+    say user_message, STATEMENT
     rake 'db:migrate'
     rake 'db:test:prepare'
     run_git('Ran db:migrate, which created db/schema.rb')
@@ -630,8 +584,7 @@ class HydraTutorial < Thor
 
   desc('hydra_jetty_config: FIX', 'FIX')
   def hydra_jetty_config
-    say %Q{
-  Hydra provides some configuration for Solr and Fedora. We will use them.\n}, STATEMENT
+    say user_message, STATEMENT
     rake 'jetty:stop'
     rake 'hydra:jetty:config'
     rake 'jetty:start'
@@ -639,12 +592,7 @@ class HydraTutorial < Thor
 
   desc('add_access_rights: FIX', 'FIX')
   def add_access_rights
-    say %Q{
-  We need to make a couple changes to our controller and model to make
-  them fully-compliant objects by teaching them about access rights.
-
-  We'll also update our controller to provide access controls on records.\n\n}, STATEMENT
-
+    say user_message, STATEMENT
     inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
       "  include Hydra::AssetsControllerHelper\n"
     end
@@ -680,23 +628,7 @@ include Hydra::Solr::Document
 
   desc('check_catalog: FIX', 'FIX')
   def check_catalog
-    say %Q{
-  Blacklight and Hydra-Head have added some new functionality to the
-  application. We can now look at a search interface (provided by Blacklight)
-  and use gated discovery over our repository. By default, objects are only
-  visible to their creator.
-
-  First create a new user account:
-
-      http://localhost:3000/users/sign_up
-
-  Then create some Record objects:
-
-      http://localhost:3000/records/new
-
-  And then check the search catalog:
-
-      http://localhost:3000/catalog\n}, STATEMENT
+    say user_message, STATEMENT
 
     # TODO: remove this monkey-patch fixing a bug in hydra-head.
     f = `bundle show hydra-head`
@@ -708,10 +640,8 @@ include Hydra::Solr::Document
 
   desc('install_rspec: FIX', 'FIX')
   def install_rspec
-    say %Q{
-  One of the great things about the Rails framework is the strong
-  testing ethic. We'll use rspec to write a couple tests for
-  this application.\n\n}, STATEMENT
+    say user_message, STATEMENT
+
     gem_group :development, :test do
       gem 'rspec'
       gem 'rspec-rails'
@@ -732,8 +662,7 @@ include Hydra::Solr::Document
   # TODO: this test should do something.
   desc('write_controller_test: FIX', 'FIX')
   def write_controller_test
-    say %Q{
-  Here's a quick example of a test.\n\n}
+    say user_message, STATEMENT
     copy_file 'records_controller_spec.rb', 'spec/controllers/records_controller_spec.rb'
     run_git('Added a controller test')
     run 'rspec'
@@ -741,9 +670,7 @@ include Hydra::Solr::Document
 
   desc('install_capybara: FIX', 'FIX')
   def install_capybara
-    say %Q{
-  We also want to write integration tests to test the end-result that
-  a user may see. We'll add the capybara gem to do that.\n\n}, STATEMENT
+    say user_message, STATEMENT
     gem_group :development, :test do
       gem 'capybara'
     end
@@ -753,26 +680,20 @@ include Hydra::Solr::Document
 
   desc('write_integration_test: FIX', 'FIX')
   def write_integration_test
-    say %Q{
-  Here's a quick integration test that proves deposit works.\n}, STATEMENT
+    say user_message, STATEMENT
     copy_file 'integration_spec.rb', 'spec/integration/integration_spec.rb'
     run_git('Added an integration test')
   end
 
   desc('run_integration_test_fail: FIX', 'FIX')
   def run_integration_test_fail
-    say %Q{
-  Now that the integration spec is in place, when we try to run rspec,
-  we'll get a test failure because it can't connect to Fedora.\n}, STATEMENT
+    say user_message, STATEMENT
     run 'rspec'
   end
 
   desc('add_jettywrapper_ci_task: FIX', 'FIX')
   def add_jettywrapper_ci_task
-    say %Q{
-  Instead, we need to add a new Rake task that knows how to wrap the
-  test suite --  start jetty before running the tests and stop jetty
-  at the end. We can use a feature provided by jettywrapper to do this.\n\n}, STATEMENT
+    say user_message, STATEMENT
     copy_file 'ci.rake', 'lib/tasks/ci.rake'
     run_git('Added ci task')
     rake 'jetty:stop'
@@ -782,8 +703,7 @@ include Hydra::Solr::Document
 
   desc('add_coverage_stats: FIX', 'FIX')
   def add_coverage_stats
-    say %Q{
-  Now that we have tests, we also want to have some coverage statistics.\n}, STATEMENT
+    say user_message(:step=>'one'), STATEMENT
 
     gem_group :development, :test do
       gem 'simplecov'
@@ -813,18 +733,15 @@ end
     rake 'ci'
     rake 'jetty:start'
 
-    say %Q{
-  Go take a look at the coverage report, open the file coverage/index.html
-  in your browser.\n}, STATEMENT
+    say user_message(:step=>'two'), STATEMENT
+
     continue_prompt
   end
 
   desc('add_file_uploads: FIX', 'FIX')
   def add_file_uploads
-    say %Q{
-  Now that we have a basic Hydra application working with metadata-only, we
-  want to enhance that with the ability to upload files. Let's add a new
-  datastream to our model.\n\n}, STATEMENT
+    say user_message, STATEMENT
+
     inject_into_class 'app/models/record.rb', 'Record' do
       "has_file_datastream :name => 'content', :type => ActiveFedora::Datastream\n"
     end
@@ -834,8 +751,8 @@ end
   # TODO: combine with previous task.
   desc('add_file_upload_controller: FIX', 'FIX')
   def add_file_upload_controller
-    say %Q{
-  And educate our controller for managing file objects.\n\n}, STATEMENT
+    say user_message, STATEMENT
+
     inject_into_class "app/controllers/records_controller.rb", "RecordsController" do
       "    include Hydra::Controller::UploadBehavior\n"
     end
@@ -849,8 +766,7 @@ end
   # TODO: combine with previous task.
   desc('add_file_upload_ui: FIX', 'FIX')
   def add_file_upload_ui
-    say %Q{
-  And add a file upload field on the form.\n}, STATEMENT
+    say user_message, STATEMENT
     f = "app/views/records/_form.html.erb"
     remove_file f
     copy_file "_form.add_file_upload.html.erb", f
@@ -859,9 +775,7 @@ end
 
   desc('fix_add_assets_links: FIX', 'FIX')
   def fix_add_assets_links
-    say %Q{
-  We'll add a little styling to the Hydra app and add a link to add a new
-  Record in the header of the layout.\n\n}, STATEMENT
+    say user_message, STATEMENT
     copy_file "_add_assets_links.html.erb", "app/views/_add_assets_links.html.erb"
     run_git('Add asset links')
   end
@@ -888,9 +802,7 @@ end
 
   desc('start_everything: FIX', 'FIX')
   def start_everything
-    say %Q{
-  Before the tutorial ends, we'll give you a final chance to look
-  at the web application.\n\n}, STATEMENT
+    say user_message, STATEMENT
     rake 'jetty:stop'
     rake 'jetty:start'
     rails_server
@@ -898,8 +810,7 @@ end
 
   desc('stop_jetty: FIX', 'FIX')
   def stop_jetty
-    say %Q{
-  This is the end of the tutorial. We'll shut down the jetty server.\n}, STATEMENT
+    say user_message, STATEMENT
     rake 'jetty:stop'
   end
 

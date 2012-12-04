@@ -271,7 +271,7 @@ en:
 
     db_migrate:
          Blacklight uses a SQL database for keeping track of user bookmarks,
-         searches, etc. We'll run the migrations next:
+         searches, etc. We'll run the migrations next.
 
     hydra_jetty_config:
          Hydra provides some configuration for Solr and Fedora. We will use them.
