@@ -13,7 +13,7 @@ en:
       This tutorial, a README file, and our bug tracker are at:
 
           https://github.com/projecthydra/hydra-tutorial"
-        
+
     install_ruby: 
       one: "Obviously, if you can run this tutorial, you have already installed ruby."
       two: | 
@@ -24,16 +24,76 @@ en:
       three: | 
         It looks like you're using rvm/rbenv/etc. We'll use
         this environment to build the application.
-      
+
       four: |
         We checked, and it looks like you might be using a system-wide ruby.
         We suggest you use somethng like rvm [1], rbenv [2], etc to manage
         your ruby projects.
 
-        You can continue and hope for the best, or go install one of these
+        "You can continue and hope for the best, or go install one of these
         ruby managers, which may make your life easier.
 
         [1] http://rvm.io/
-        [2] https://github.com/sstephenson/rbenv/
-      
-    
+        [2] https://github.com/sstephenson/rbenv/"
+
+    install_bundler_and_rails:
+        "We're going to install some prerequisite gems in order to create our
+        skeleton Rails application."
+
+    new_rails_app:
+      one:
+        "Now we'll create the application."
+
+      two:
+        "%{@@conf.app} already exists. Either remove it or provide
+        a different application name using the --app option."
+
+    git_initial_commit:
+        "We will keep track of our work using Git so that you can see how
+        the files in the project change from one step to the next. To see
+        the difference you can open a terminal in the Rails application
+        directory and run the following Git command.
+
+          git diff HEAD^1..HEAD
+
+        Or you can simply run the tutorial with the --diff option.
+
+        Alternatively, you can use a tool like Gitx to see the differences
+        in the code from one step in the tutorial to the next.
+
+        First, we'll initialize our project's Git repository."
+
+    out_of_the_box:
+        "Here's a chance to look around. You can see the structure of
+        a Rails application. In particular, look at:
+           ./app
+           ./config
+           ./lib
+           Gemfile
+
+        If we launched the Rails application server, we can see the application
+        running in the browser and you can see if everything is working."
+
+    adding_dependencies:
+        "Now we'll add some Javascript dependencies."
+
+    add_fedora_and_solr_with_hydrajetty:
+      one:
+        "Fedora runs as a Java servlet inside a container like Tomcat or Jetty.
+        Hydra provides a bundled version of Fedora and Solr for
+        testing and development."
+
+      two:
+        "We'll download it now and put a copy into your application's directory.
+        This might take awhile."
+
+    jetty_configuration:
+      one:
+        "We'll add some configuration yml files with information to connect
+        to Solr and Fedora."
+
+      two:
+        "And we will add the 'jettywrapper' gem, which adds Rake tasks to start
+        and stop Jetty."
+
+
