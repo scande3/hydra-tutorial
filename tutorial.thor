@@ -9,6 +9,7 @@ require 'active_support/core_ext/string/inflections'
 require 'fileutils'
 require 'yaml'
 require 'set'
+require 'i18n'
 
 # Colors used in messages to the user.
 STATEMENT = Thor::Shell::Color::YELLOW
@@ -16,6 +17,7 @@ QUESTION  = Thor::Shell::Color::GREEN
 WAIT      = Thor::Shell::Color::CYAN
 WARNING   = Thor::Shell::Color::RED
 
+I18n.load_path += Dir[File.join(File.dirname(__FILE__),'config','locales','*.yml')]
 
 ####
 # Some utility methods used by the tutorial.
@@ -273,20 +275,14 @@ class HydraTutorial < Thor
   # The tasks should be defined in the order they should run.
   ####
 
+  # get the say string for the named method using i18n gem
+  def get_say_string(method,params)
+    I18n.t("steps.#{method}",params)
+  end
+  
   desc('welcome: FIX', 'FIX')
-  def welcome
-    say %Q{
-  Welcome to this Hydra tutorial. We're going to step through building a
-  working Hydra application. We'll build the application gradually, starting by
-  building our "business logic", wiring in HTML views, and then connecting it
-  to our Rails application.
-
-  We'll generate a stub application in the #{@@conf.app} folder. You can change
-  that using the --app option.
-
-  This tutorial, a README file, and our bug tracker are at:
-
-      https://github.com/projecthydra/hydra-tutorial\n}, STATEMENT
+  def welcome  
+    say get_say_string(__method__,{:conf_app=>@@conf.app}),STATEMENT
   end
 
   desc('install_ruby: FIX', 'FIX')
@@ -998,6 +994,7 @@ end
     rake 'jetty:stop'
   end
 
+  
 end
 
 

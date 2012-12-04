@@ -1,0 +1,17 @@
+en:
+  hello: "Hello world from San Diego"
+  steps:
+    welcome: |
+      Welcome to this Hydra tutorial. YAML ROCKS! We're going to step through building a
+      working Hydra application. We'll build the application gradually, starting by
+      building our "business logic", wiring in HTML views, and then connecting it
+      to our Rails application.
+
+      We'll generate a stub application in the %{conf_app} folder. You can change
+      that using the --app option.
+
+      This tutorial, a README file, and our bug tracker are at:
+
+          https://github.com/projecthydra/hydra-tutorial
+        
+    install_ruby: Some more text

@@ -11,5 +11,6 @@ Gem::Specification.new do |s|
   s.executables = ['hydra-tutorial']
   s.add_dependency "thor", "~> 0.15"
   s.add_dependency "rails"
+  s.add_dependency "i18n"
   s.add_dependency "bundler"
 end
