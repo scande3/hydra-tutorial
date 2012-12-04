@@ -80,6 +80,7 @@ module HydraTutorialHelpers
     I18n.t(key,vals) + "\n"
   end
 
+  # collect all the keys from the translation file
   def collect_keys(scope, translations)
     full_keys = []
     translations.to_a.each do |key, translations|
@@ -184,6 +185,18 @@ class HydraTutorial < Thor
     :diff          => :boolean,
     :app           => :string
   )
+
+  def create_guide    
+    I18n.backend.send(:init_translations)
+    # Get all keys from all locales
+    all_keys = I18n.backend.send(:translations).collect do |check_locale, translations|
+      collect_keys([], translations)
+    end.flatten.uniq
+    step_keys=all_keys.collect do |key|
+      key if key.include?('steps.')
+    end
+    puts step_keys.compact.inspect
+  end
 
   def main(*requested_tasks)
     # Setup.
@@ -296,19 +309,6 @@ class HydraTutorial < Thor
   # The remaining methods represent the steps in the tutorial.
   # The tasks should be defined in the order they should run.
   ####
-
-  desc('get_keys: FIX','FIX')
-  def get_keys
-    I18n.backend.send(:init_translations)
-    # Get all keys from all locales
-    all_keys = I18n.backend.send(:translations).collect do |check_locale, translations|
-      collect_keys([], translations)
-    end.flatten.uniq
-    step_keys=all_keys.collect do |key|
-      key if key.include?('steps.')
-    end
-    puts step_keys.compact.inspect
-  end
   
   desc('welcome: FIX', 'FIX')
   def welcome
