@@ -14,7 +14,7 @@ en:
 
           https://github.com/projecthydra/hydra-tutorial
 
-    install_ruby: 
+    install_ruby:
       one:
         Obviously, if you can run this tutorial, you have already installed ruby.  If you are on a Mac, you might need to install homebrew and do a 'brew install v8' to get therubyracer gem to install.
 
@@ -110,7 +110,7 @@ en:
 
         And a Solr index at:
 
-            http://localhost:8983/solr/development/admin/
+            http://localhost:8983/solr/#/development
 
     remove_public_index:
       Removing the default home page from Rails. We will replace it later.
