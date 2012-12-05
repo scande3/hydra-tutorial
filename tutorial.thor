@@ -30,10 +30,8 @@ module HydraTutorialHelpers
   # Runs the Rails console for the user.
   def rails_console
     return if @@conf.quick
-    say %Q{
-  We'll launch the console again.\n}, STATEMENT
-    say %Q{
-  Hit Ctrl-D (^D) to stop the Rails console and continue this tutorial.\n}, WAIT
+    say I18n.t('helpers.rails_console.start'), STATEMENT
+    say I18n.t('helpers.rails_console.stop'), WAIT
     run "rails c"
   end
 
@@ -41,13 +39,8 @@ module HydraTutorialHelpers
   # directing their attention to a particular URL.
   def rails_server url = '/'
     return if @@conf.quick
-    say %Q{
-  We'll start the Rails server for you. It should be available in
-  your browser at:
-
-     http://localhost:3000#{url}\n}, STATEMENT
-    say %Q{
-  Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.\n}, WAIT
+    say I18n.t('helpers.rails_server.start',:url=>url), STATEMENT
+    say I18n.t('helpers.rails_server.stop'), WAIT
     run "rails s"
   end
 
@@ -56,8 +49,7 @@ module HydraTutorialHelpers
   def continue_prompt
     return if @@conf.quick
     return unless @@conf.run_all
-    ask %Q{
-  HIT <ENTER> KEY TO CONTINUE}, WAIT
+    ask I18n.t('helpers.continue'), WAIT
   end
 
   # Takes a commit message an an optional array of git commands.

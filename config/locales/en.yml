@@ -1,6 +1,8 @@
 en:
   hello: "Hello world from San Diego"
   helpers:
+    continue:
+      HIT <ENTER> KEY TO CONTINUE
     rails_console:
       start:
         We'll launch the console again.
