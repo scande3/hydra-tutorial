@@ -7,7 +7,7 @@ en:
       building our "business logic", wiring in HTML views, and then connecting it
       to our Rails application.
 
-      We'll generate a stub application in the %{conf_app} folder. You can change
+      We'll generate a stub application in the %{conf_app}  folder. You can change
       that using the --app option.
 
       This tutorial, a README file, and our bug tracker are at:
@@ -179,10 +179,10 @@ en:
 
            Notice also that OM also makes it easy to instantiate an empty version
            of a datastream. This behavior is controlled by the code in the
-           xml_template() method of our Record model. Having set a value for
+           `xml_template()` method of our Record model. Having set a value for
            the title and saved the object, you can now take a look at the entire
            datastream spawned by OM according to the instructions in the
-           xml_template() method:
+           `xml_template()` method:
 
                > puts obj.descMetadata.content
 
