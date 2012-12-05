@@ -26,11 +26,13 @@ en:
 
       This tutorial, a README file, and our bug tracker are at:
 
-          https://github.com/projecthydra/hydra-tutorial
+      <https://github.com/projecthydra/hydra-tutorial>
 
     install_ruby:
       one:
-        Obviously, if you can run this tutorial, you have already installed ruby.  If you are on a Mac, you might need to install homebrew and do a 'brew install v8' to get therubyracer gem to install.
+        Obviously, if you can run this tutorial, you have already installed ruby.
+        If you are on a Mac, you might need to install homebrew and do a `brew install v8` to
+        get therubyracer gem to install.
 
       two_noguide: |+
         You are running this using:
@@ -50,8 +52,9 @@ en:
         You can continue and hope for the best, or go install one of these
         ruby managers, which may make your life easier.
 
-            [1] http://rvm.io/
-            [2] https://github.com/sstephenson/rbenv/
+          [1] <http://rvm.io/>
+
+          [2] <https://github.com/sstephenson/rbenv/>
 
     install_bundler_and_rails:
         We're going to install some prerequisite gems in order to create our skeleton Rails application.
@@ -120,11 +123,11 @@ en:
       two: |+
         Jetty should be running on port 8983. You can see the Fedora server at:
 
-            http://localhost:8983/fedora/
+          <http://localhost:8983/fedora/>
 
         And a Solr index at:
 
-            http://localhost:8983/solr/#/development
+          <http://localhost:8983/solr/#/development>
 
     remove_public_index:
       Removing the default home page from Rails. We will replace it later.
@@ -303,15 +306,15 @@ en:
 
          First create a new user account:
 
-             http://localhost:3000/users/sign_up
+           <http://localhost:3000/users/sign_up>
 
          Then create some Record objects:
 
-             http://localhost:3000/records/new
+           <http://localhost:3000/records/new>
 
          And then check the search catalog:
 
-             http://localhost:3000/catalog
+           <http://localhost:3000/catalog>
 
     install_rspec:
          One of the great things about the Rails framework is the strong
