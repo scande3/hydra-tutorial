@@ -632,7 +632,7 @@ include Hydra::Solr::Document
 
     copy_file '_user_util_links.html.erb', 'app/views/_user_util_links.html.erb'
 
-    rails_server('/records/new')
+    rails_server
   end
 
   desc('install_rspec: FIX', 'FIX')
