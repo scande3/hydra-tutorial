@@ -77,8 +77,6 @@ module HydraTutorialHelpers
     method=caller[0][/`.*'/][1..-2]
     key = "steps.#{method}"
     key << ".#{vals[:substep]}" if (!vals.nil? && vals.include?(:substep))
-    puts "KEY: #{key}"
-    puts "VALS: #{vals}"
     I18n.t(key,vals) + "\n"
   end
 
