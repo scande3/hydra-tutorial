@@ -188,7 +188,7 @@ class HydraTutorial < Thor
     prev_title=''
     
     File.open(guide_output_filename, 'w') do |file|  
-      file.puts "HYDRA TUTORIAL GUIDE"
+      file.puts "# HYDRA TUTORIAL GUIDE"
       file.puts "auto generated on #{Time.now}"
       file.puts ""
       counter=1
@@ -700,7 +700,7 @@ include Hydra::Solr::Document
 
   desc('add_coverage_stats: FIX', 'FIX')
   def add_coverage_stats
-    say user_message(:step=>'one'), STATEMENT
+    say user_message(:substep=>'one'), STATEMENT
 
     gem_group :development, :test do
       gem 'simplecov'
@@ -730,7 +730,7 @@ end
     rake 'ci'
     rake 'jetty:start'
 
-    say user_message(:step=>'two'), STATEMENT
+    say user_message(:substep=>'two'), STATEMENT
 
     continue_prompt
   end
