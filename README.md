@@ -61,11 +61,11 @@ $ gem install hydra-tutorial
 
 ## Tutorial guide
 
-The [tutorial guide](/hydra-tutorial-guide.md/) is a web page that shows the full text of the helpful messages
+The tutorial guide is a web page that shows the full text of the helpful messages
 shown in each step of the tutorial.  This guide might be useful to you if you want
 to print or have open the messages shown in each step while you run the tutorial.
 
-[tutorial guide](/hydra-tutorial-guide.md/)
+See the hydra-tutorial-guide.md file.
 
 ## Running the tutorial
 
