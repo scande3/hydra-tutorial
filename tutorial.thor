@@ -189,7 +189,7 @@ class HydraTutorial < Thor
     
     File.open(guide_output_filename, 'w') do |file|  
       file.puts "# HYDRA TUTORIAL GUIDE"
-      file.puts "auto generated on #{Time.now}"
+      file.puts "_auto generated on #{Time.now}_"
       file.puts ""
       counter=1
       step_keys=all_keys.each do |key|
