@@ -1,5 +1,5 @@
 # HYDRA TUTORIAL GUIDE
-_auto generated on 2012-12-05 11:16:41 -0800_
+_auto generated on 2012-12-05 11:25:28 -0800_
 
 ## Step 1. Welcome
 Welcome to this Hydra tutorial. We're going to step through building a
@@ -7,16 +7,16 @@ working Hydra application. We'll build the application gradually, starting by
 building our "business logic", wiring in HTML views, and then connecting it
 to our Rails application.
 
-We'll generate a stub application in the hydra_tutorial_app folder. You can change
+We'll generate a stub application in the hydra_tutorial_app  folder. You can change
 that using the --app option.
 
 This tutorial, a README file, and our bug tracker are at:
 
-    https://github.com/projecthydra/hydra-tutorial
+<https://github.com/projecthydra/hydra-tutorial>
 
 
 ## Step 2. Install Ruby
-Obviously, if you can run this tutorial, you have already installed ruby.  If you are on a Mac, you might need to install homebrew and do a 'brew install v8' to get therubyracer gem to install.
+Obviously, if you can run this tutorial, you have already installed ruby. If you are on a Mac, you might need to install homebrew and do a `brew install v8` to get therubyracer gem to install.
 
 We suggest you use somethng like rvm [1], rbenv [2], etc to manage
 your ruby projects.
@@ -24,8 +24,9 @@ your ruby projects.
 You can continue and hope for the best, or go install one of these
 ruby managers, which may make your life easier.
 
-    [1] http://rvm.io/
-    [2] https://github.com/sstephenson/rbenv/
+  [1] <http://rvm.io/>
+
+  [2] <https://github.com/sstephenson/rbenv/>
 
 
 ## Step 3. Install Bundler And Rails
@@ -81,11 +82,11 @@ Now we'll start Jetty
 
 Jetty should be running on port 8983. You can see the Fedora server at:
 
-    http://localhost:8983/fedora/
+  <http://localhost:8983/fedora/>
 
 And a Solr index at:
 
-    http://localhost:8983/solr/#/development
+  <http://localhost:8983/solr/#/development>
 
 
 ## Step 11. Remove Public Index
@@ -156,10 +157,10 @@ manipulate our object using methods provided by OM.
 
 Notice also that OM also makes it easy to instantiate an empty version
 of a datastream. This behavior is controlled by the code in the
-xml_template() method of our Record model. Having set a value for
+`xml_template()` method of our Record model. Having set a value for
 the title and saved the object, you can now take a look at the entire
 datastream spawned by OM according to the instructions in the
-xml_template() method:
+`xml_template()` method:
 
     > puts obj.descMetadata.content
 
@@ -257,15 +258,15 @@ visible to their creator.
 
 First create a new user account:
 
-    http://localhost:3000/users/sign_up
+  <http://localhost:3000/users/sign_up>
 
 Then create some Record objects:
 
-    http://localhost:3000/records/new
+  <http://localhost:3000/records/new>
 
 And then check the search catalog:
 
-    http://localhost:3000/catalog
+  <http://localhost:3000/catalog>
 
 
 ## Step 29. Install Rspec
