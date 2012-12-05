@@ -80,4 +80,25 @@ class RecordsController < ApplicationController
       format.json { head :no_content }
     end
   end
+
+  # fix this, shouldn't be called
+  # this is in the solr_helper.rb in blacklight
+  def force_to_utf8( value )
+    case value
+    when Hash
+      value.each { |k, v| value[k] = force_to_utf8(v) }
+    when Array
+      value.each { |v| force_to_utf8(v) }
+    when String
+      value.force_encoding("utf-8")  if value.respond_to?(:force_encoding) 
+    end
+    value
+  end
+
+  private
+    def apply_depositor_metadata(asset)
+      if asset.respond_to?(:apply_depositor_metadata) && user_key
+        asset.apply_depositor_metadata(user_key)
+      end
+    end
 end

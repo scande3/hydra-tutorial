@@ -408,7 +408,7 @@ class HydraTutorial < Thor
     say user_message(:substep=>'one'), STATEMENT
     say user_message(:substep=>'two'), STATEMENT
     unless File.exists? '../jetty'
-      git :clone => '-b master git://github.com/projecthydra/hydra-jetty.git ../jetty'
+      git :clone => 'http://github.com/projecthydra/hydra-jetty.git ../jetty'
     end
     unless File.exists? 'jetty'
       run 'cp -R ../jetty jetty'
@@ -551,11 +551,11 @@ class HydraTutorial < Thor
   def add_hydra_gems
     say user_message, STATEMENT
     if @@conf.gems_from_git
-      gem 'blacklight', :git => "git://github.com/projectblacklight/blacklight.git"
-      gem 'hydra-head', :git => "git://github.com/projecthydra/hydra-head.git"
+      gem 'blacklight', :git => "http://github.com/projectblacklight/blacklight.git"
+      gem 'hydra-head', :git => "http://github.com/projecthydra/hydra-head.git"
     else
       gem 'blacklight'
-      gem 'hydra-head', ">= 4.1.1"
+      gem 'hydra-head', ">= 5.x"
     end
     gem 'devise'
     run 'bundle install', :capture => false
@@ -593,9 +593,9 @@ class HydraTutorial < Thor
   desc('add_access_rights: FIX', 'FIX')
   def add_access_rights
     say user_message, STATEMENT
-    inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
-      "  include Hydra::AssetsControllerHelper\n"
-    end
+    # inject_into_class "app/controllers/records_controller.rb", 'RecordsController' do
+    #   "  include Hydra::AssetsControllerHelper\n"
+    # end
 
     insert_into_file "app/controllers/records_controller.rb", :after => "@record = Record.new(params[:record])\n" do
       "    apply_depositor_metadata(@record)\n"
@@ -630,10 +630,7 @@ include Hydra::Solr::Document
   def check_catalog
     say user_message, STATEMENT
 
-    # TODO: remove this monkey-patch fixing a bug in hydra-head.
-    f = `bundle show hydra-head`
-    f = "#{f.strip}/app/views/_user_util_links.html.erb"
-    gsub_file f, /.+folder_index_path.+/, ''
+    copy_file '_user_util_links.html.erb', 'app/views/_user_util_links.html.erb'
 
     rails_server('/records/new')
   end

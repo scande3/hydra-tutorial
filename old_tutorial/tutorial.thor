@@ -219,7 +219,7 @@ class HydraTutorialApp < Thor::Group
     We'll download a copy now. It may take awhile.
       }, Thor::Shell::Color::YELLOW
       unless File.exists? '../jetty'
-        git :clone => 'git://github.com/projecthydra/hydra-jetty.git ../jetty'
+        git :clone => 'http://github.com/projecthydra/hydra-jetty.git ../jetty'
       end
       run 'cp -R ../jetty jetty'
 #      run 'rake hydra:jetty:config'
@@ -324,7 +324,7 @@ class HydraTutorialApp < Thor::Group
         }, Thor::Shell::Color::YELLOW
 
         unless File.exists? '../jetty'
-          git :clone => 'git://github.com/projecthydra/hydra-jetty.git ../jetty'
+          git :clone => 'http://github.com/projecthydra/hydra-jetty.git ../jetty'
         end
         run 'cp -R ../jetty jetty'
 
