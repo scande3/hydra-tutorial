@@ -178,7 +178,7 @@ class HydraTutorial < Thor
     HydraTutorial.initialize_config(options)
     params={:conf_app=>@@conf.app} # interpolations we will just pass into every translations
     
-    guide_output_filename=File.join(Dir.pwd, 'hydra-tutorial-guide.txt') # guide output filename
+    guide_output_filename=File.join(Dir.pwd, 'hydra-tutorial-guide.md') # guide output filename
     
     I18n.backend.send(:init_translations)
     # Get all keys from all locales
@@ -197,7 +197,7 @@ class HydraTutorial < Thor
           key_split=key.split('.') # split key into parts
           title=key_split[1].split("_").map {|word| word.capitalize}.join(" ") # get title, uppercasing it and converting _ to spaces
           if title != prev_title # only print the title once per step (it could occur multiple times if there are substeps)
-            file.puts "Step #{counter}. #{title}: " 
+            file.puts "## Step #{counter}. #{title}"
             counter+=1
           end
           prev_title=title.dup
