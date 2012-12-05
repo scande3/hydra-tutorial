@@ -4,4 +4,6 @@ pkg
 Gemfile.lock
 .rvmrc
 .hydra-tutorial-progress
-hydra-tutorial-guide.txt
+*.txt
+*.md
+*.gem
