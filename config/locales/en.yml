@@ -7,7 +7,7 @@ en:
       building our "business logic", wiring in HTML views, and then connecting it
       to our Rails application.
 
-      We'll generate a stub application in the %{conf_app} folder. You can change
+      We'll generate a stub application in the %{conf_app}  folder. You can change
       that using the --app option.
 
       This tutorial, a README file, and our bug tracker are at:
@@ -173,21 +173,21 @@ en:
            If we launch the Rails interactive console, you can now create and
            manipulate our object using methods provided by OM.
 
-             > obj = Record.new
-             > obj.descMetadata.title = "My object title"
-             > obj.save
+               > obj = Record.new
+               > obj.descMetadata.title = "My object title"
+               > obj.save
 
            Notice also that OM also makes it easy to instantiate an empty version
            of a datastream. This behavior is controlled by the code in the
-           xml_template() method of our Record model. Having set a value for
+           `xml_template()` method of our Record model. Having set a value for
            the title and saved the object, you can now take a look at the entire
            datastream spawned by OM according to the instructions in the
-           xml_template() method:
+           `xml_template()` method:
 
-             > puts obj.descMetadata.content
+               > puts obj.descMetadata.content
 
-             > obj.delete
-             > exit
+               > obj.delete
+               > exit
 
     use_the_delegate_method:
       one:
@@ -195,16 +195,15 @@ en:
          to access its descMetadata attributes.
 
       two: |+
-          Back in the Rails console you can now access the title attribute directly
-           from the object:
+          Back in the Rails console you can now access the title attribute directly from the object:
 
-             > obj = Record.new
-             > obj.title = "My object title"
-             > obj.save
-             > puts obj.descMetadata.content
-             > puts obj.title.inspect
-             > obj.delete
-             > exit
+              > obj = Record.new
+              > obj.title = "My object title"
+              > obj.save
+              > puts obj.descMetadata.content
+              > puts obj.title.inspect
+              > obj.delete
+              > exit
 
     add_mods_model_with_mods_descmd: |
          We'll now replace the minimal XML metadata schema with a simple
