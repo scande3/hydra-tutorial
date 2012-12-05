@@ -11,7 +11,7 @@ en:
         We'll start the Rails server for you. It should be available in
         your browser at:
 
-            http://localhost:3000#{url}
+          <http://localhost:3000#{url}>
       stop:
         Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.
   steps:
