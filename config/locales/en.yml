@@ -1,5 +1,19 @@
 en:
   hello: "Hello world from San Diego"
+  helpers:
+    rails_console:
+      start:
+        We'll launch the console again.
+      stop:
+        Hit Ctrl-D (^D) to stop the Rails console and continue this tutorial.
+    rails_server:
+      start: |+
+        We'll start the Rails server for you. It should be available in
+        your browser at:
+
+            http://localhost:3000#{url}
+      stop:
+        Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.
   steps:
     welcome: |+
       Welcome to this Hydra tutorial. We're going to step through building a
