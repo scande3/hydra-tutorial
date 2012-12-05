@@ -15,15 +15,16 @@ en:
           https://github.com/projecthydra/hydra-tutorial
 
     install_ruby: 
-      one: "Obviously, if you can run this tutorial, you have already installed ruby.  If you are on a Mac, you might need to install homebrew and do a 'brew install v8' to get therubyracer gem to install."
+      one:
+        Obviously, if you can run this tutorial, you have already installed ruby.  If you are on a Mac, you might need to install homebrew and do a 'brew install v8' to get therubyracer gem to install.
+
       two_noguide: |+
         You are running this using:
 
             %{ruby_executable}
  
       three_conditional: |
-        It looks like you're using rvm/rbenv/etc. We'll use
-        this environment to build the application.
+        It looks like you're using rvm/rbenv/etc. We'll use this environment to build the application.
 
       four_conditional: |
         We checked, and it looks like you might be using a system-wide ruby.
@@ -35,16 +36,15 @@ en:
         You can continue and hope for the best, or go install one of these
         ruby managers, which may make your life easier.
 
-        [1] http://rvm.io/
-        [2] https://github.com/sstephenson/rbenv/
+            [1] http://rvm.io/
+            [2] https://github.com/sstephenson/rbenv/
 
-    install_bundler_and_rails: |
-        We're going to install some prerequisite gems in order to create our
-        skeleton Rails application.
+    install_bundler_and_rails:
+        We're going to install some prerequisite gems in order to create our skeleton Rails application.
 
     new_rails_app:
       one:
-        "Now we'll create the application."
+        Now we'll create the application.
 
       two_conditional:
         "%{conf_app} already exists. Either remove it or provide
@@ -56,7 +56,7 @@ en:
         the difference you can open a terminal in the Rails application
         directory and run the following Git command.
 
-          git diff HEAD^1..HEAD
+            git diff HEAD^1..HEAD
 
         Or you can simply run the tutorial with the --diff option.
 
@@ -69,10 +69,10 @@ en:
         Here's a chance to look around. You can see the structure of
         a Rails application. In particular, look at:
 
-           ./app
-           ./config
-           ./lib
-           Gemfile
+            ./app
+            ./config
+            ./lib
+            Gemfile
 
         If we launched the Rails application server, we can see the application
         running in the browser and you can see if everything is working.
@@ -106,11 +106,11 @@ en:
       two: |+
         Jetty should be running on port 8983. You can see the Fedora server at:
 
-          http://localhost:8983/fedora/
+            http://localhost:8983/fedora/
 
         And a Solr index at:
 
-          http://localhost:8983/solr/development/admin/
+            http://localhost:8983/solr/development/admin/
 
     remove_public_index:
       Removing the default home page from Rails. We will replace it later.
@@ -217,11 +217,11 @@ en:
          If you launch the Rails interactive console, we can now create
          and manipulate our object using methods provided by OM.
 
-           > obj = Record.new
-           > obj.title = "My object title"
-           > obj.save
-           > puts obj.descMetadata.content
-           > exit
+             > obj = Record.new
+             > obj.title = "My object title"
+             > obj.save
+             > puts obj.descMetadata.content
+             > exit
 
     record_generator:
       one:
