@@ -1,6 +1,8 @@
 en:
   hello: "Hello world from San Diego"
   helpers:
+    continue:
+      HIT <ENTER> KEY TO CONTINUE
     rails_console:
       start:
         We'll launch the console again.
@@ -11,7 +13,7 @@ en:
         We'll start the Rails server for you. It should be available in
         your browser at:
 
-          <http://localhost:3000#{url}>
+          <http://localhost:3000%{url}>
       stop:
         Hit Ctrl-C (^C) to stop the Rails server and continue this tutorial.
   steps:
