@@ -80,7 +80,9 @@ And we will add the 'jettywrapper' gem, which adds Rake tasks to start and stop 
 ## Step 10. Starting Jetty
 Now we'll start Jetty
 
-Jetty should be running on port 8983. You can see the Fedora server at:
+Jetty will be running on port 8983. NOTE: It may take up to 5 minutes to start. Please wait and verify it has started.
+
+You can see the Fedora server at:
 
   <http://localhost:8983/fedora/>
 
